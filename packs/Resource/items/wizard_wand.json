@@ -1,0 +1,14 @@
+{
+    "format_version": "1.10.0",
+    "minecraft:item": {
+      "description": {
+        "identifier": "witchcraft:wizard_wand"
+      },
+      "components": {
+        "minecraft:icon": {
+          "texture": "wizard_wand"
+        },
+        "minecraft:hand_equipped": true
+      }
+    }
+  }

@@ -22,7 +22,7 @@
       "type": "script",
       "language": "javascript",
       "uuid": "f9363922-de0a-4600-ad35-0f2ec27f864b",
-      "entry": "scripts/build/main.js",
+      "entry": "scripts/main.js",
       "version": [1, 0, 0]
     }
   ],

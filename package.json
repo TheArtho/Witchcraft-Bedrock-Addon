@@ -2,6 +2,11 @@
   "dependencies": {
     "@minecraft/server": "^2.0.0-beta.1.21.70-stable",
     "@minecraft/server-ui": "^2.0.0-beta.1.21.70-stable",
+    "fs-extra": "^11.3.0",
     "typescript": "^5.8.3"
+  },
+  "scripts": {
+    "build": "node build.js",
+    "build:clean": "node build.js --clean"
   }
 }

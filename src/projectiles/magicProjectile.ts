@@ -1,4 +1,4 @@
-import {Player, system, world, Vector3, Entity, MolangVariableMap} from "@minecraft/server";
+import {Player, system, Vector3, Entity} from "@minecraft/server";
 import { handleSpellImpact } from "../spells/collisionHandler";
 
 const passThroughBlocks = [

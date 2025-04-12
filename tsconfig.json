@@ -1,15 +1,15 @@
 {
   "compilerOptions": {
-    "target": "ES2020",
+    "target": "ES2021",
     "module": "ESNext",
     "moduleResolution": "Node",
-    "outDir": "./scripts/build",
-    "rootDir": "./scripts/ts",
+    "outDir": "./packs/Behaviour/scripts",
+    "rootDir": "./src",
     "strict": true,
     "allowJs": false,
     "checkJs": false,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true
   },
-  "include": ["scripts/ts/**/*.ts"]
+  "include": ["src/**/*.ts"]
 }
