@@ -1,39 +1,40 @@
 {
-  "format_version": 2,
-  "metadata": {
-    "authors": [
-      "Artho."
-    ]
-  },
-  "header": {
-    "name": "pack.name",
-    "description": "pack.description",
-    "min_engine_version": [1, 21, 70],
-    "uuid": "5291b84b-e2e5-470f-a663-54d7b4df82c8",
-    "version": [0, 0, 1]
-  },
-  "modules": [
-    {
-      "type": "data",
-      "uuid": "f56dd0c9-c5a8-4df0-89f3-d91a9a36e801",
-      "version": [1, 0, 0]
-    },
-    {
-      "type": "script",
-      "language": "javascript",
-      "uuid": "f9363922-de0a-4600-ad35-0f2ec27f864b",
-      "entry": "scripts/main.js",
-      "version": [1, 0, 0]
-    }
-  ],
-  "dependencies": [
-    {
-      "module_name": "@minecraft/server",
-      "version": "2.0.0-beta"
-    },
-    {
-      "module_name": "@minecraft/server-ui",
-      "version": "2.0.0-beta"
-    }
-  ]
+	"format_version": 2,
+	"metadata": {
+		"authors": ["Artho."],
+		"generated_with": {
+			"blockbench_block_wizard": ["1.4.1"]
+		}
+	},
+	"header": {
+		"name": "pack.name",
+		"description": "pack.description",
+		"min_engine_version": [1, 21, 70],
+		"uuid": "5291b84b-e2e5-470f-a663-54d7b4df82c8",
+		"version": [0, 0, 1]
+	},
+	"modules": [
+		{
+			"type": "data",
+			"uuid": "f56dd0c9-c5a8-4df0-89f3-d91a9a36e801",
+			"version": [1, 0, 0]
+		},
+		{
+			"type": "script",
+			"language": "javascript",
+			"uuid": "f9363922-de0a-4600-ad35-0f2ec27f864b",
+			"entry": "scripts/main.js",
+			"version": [1, 0, 0]
+		}
+	],
+	"dependencies": [
+		{
+			"module_name": "@minecraft/server",
+			"version": "2.0.0-beta"
+		},
+		{
+			"module_name": "@minecraft/server-ui",
+			"version": "2.0.0-beta"
+		}
+	]
 }

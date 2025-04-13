@@ -1,6 +1,8 @@
+import { SpellIds } from "../spells/Spell";
 export const spellList = [
-    { id: "fulmen", name: "§eFulmen" },
-    { id: "leviosa", name: "§7Leviosa" },
+    SpellIds.Lumos,
+    SpellIds.Leviosa,
+    SpellIds.Fulmen,
 ];
 const playerSpells = new Map(); // player.id -> selectedSpellIndex
 export function getSelectedSpell(playerId) {

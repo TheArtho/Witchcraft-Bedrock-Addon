@@ -1,6 +1,6 @@
-import { spawnMagicProjectile } from "../projectiles/magicProjectile";
 import { system, world } from "@minecraft/server";
 import { cycleSpell, getSelectedSpell } from "../interface/spellMenu";
+import { getSpellFromId } from "../spells/spellRegistry";
 world.afterEvents.itemUse.subscribe((event) => {
     const player = event.source;
     const item = event.itemStack;
@@ -13,9 +13,11 @@ world.afterEvents.itemUse.subscribe((event) => {
             volume: 0.5
         });
         const selectedSpell = getSelectedSpell(player.id);
-        system.run(() => player.runCommand(`titleraw @s actionbar {"rawtext":[{"text":"Sort sélectionné : ${selectedSpell.name}"}]}`));
+        const spell = getSpellFromId(selectedSpell);
+        system.run(() => player.runCommand(`titleraw @s actionbar {"rawtext":[{"text":"Sort sélectionné : ${spell.color}${spell.name}"}]}`));
         return;
     }
     const selectedSpell = getSelectedSpell(player.id);
-    spawnMagicProjectile(player, selectedSpell.id);
+    const spell = getSpellFromId(selectedSpell);
+    spell.cast(player);
 });

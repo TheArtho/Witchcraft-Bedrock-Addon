@@ -1,5 +1,6 @@
 import {Player, system, Vector3, Entity} from "@minecraft/server";
-import { handleSpellImpact } from "../spells/collisionHandler";
+import {ProjectileSpell} from "../spells/ProjectileSpell";
+import {spellIdToString} from "../spells/spellRegistry";
 
 const passThroughBlocks = [
     "minecraft:water",
@@ -27,7 +28,7 @@ const passThroughBlocks = [
     "minecraft:brown_mushroom"
 ];
 
-export function spawnMagicProjectile(caster: Player, spellId: string) {
+export function spawnMagicProjectile(caster: Player, spell : ProjectileSpell) {
     const direction = caster.getViewDirection();
     const origin = caster.getHeadLocation();
     const dimension = caster.dimension;
@@ -45,7 +46,7 @@ export function spawnMagicProjectile(caster: Player, spellId: string) {
 
     // Rend invisible l'armor stand
     projectile.addEffect("invisibility", 600, { showParticles: false });
-    projectile.nameTag = `spell:${spellId}:${caster.name}`;
+    projectile.nameTag = `spell:${spellIdToString(spell.id)}:${caster.name}`;
     projectile.addTag("witchcraft_projectile");
 
     const speed = 0.8;
@@ -100,8 +101,7 @@ export function spawnMagicProjectile(caster: Player, spellId: string) {
         }
 
         if (hit) {
-            // console.log("Spell hit !")
-            handleSpellImpact(direction, projectile, hit);
+            spell.onEntityHit?.(caster, hit);
             if (projectile.isValid) {
                 projectile.triggerEvent("minecraft:despawn_now")
             }
@@ -120,6 +120,7 @@ export function spawnMagicProjectile(caster: Player, spellId: string) {
 
                 if (isSolid && !passThrough) {
                     // console.log(`Projectile hit block: ${type}`);
+                    spell.onBlockHit?.(caster, type);
                     if (projectile.isValid) {
                         projectile.triggerEvent("minecraft:despawn_now")
                     }
