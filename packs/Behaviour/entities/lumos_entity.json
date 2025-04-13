@@ -13,8 +13,12 @@
       },
       "minecraft:fire_immune": true,
       "minecraft:collision_box": {
-        "width": 0.3,
-        "height": 0.3
+        "width": 0,
+        "height": 0
+      },
+      "minecraft:physics": {
+        "has_collision": false,
+        "has_gravity": false
       }
     },
     "component_groups": {

@@ -4,8 +4,8 @@ import { SpellIds } from "../spells/Spell";
 import { getSpellFromId } from "../spells/spellRegistry";
 import { customEvents } from "../events/customEventHandler";
 import { activeSpells } from "../core/activeSpellManager";
-function isPersistent(spell) {
-    return typeof spell.stop === "function" && "isActive" in spell;
+function isPersistentSpell(spell) {
+    return typeof spell?.stop === "function";
 }
 function isHoldingWand(player) {
     const item = player.getComponent(EntityComponentTypes.Equippable)?.getEquipment(EquipmentSlot.Mainhand)
@@ -14,8 +14,8 @@ function isHoldingWand(player) {
 }
 function updateSpell(player) {
     const previousSpell = activeSpells.get(player.id);
-    if (previousSpell && isPersistent(previousSpell)) {
-        previousSpell.stop();
+    if (previousSpell && isPersistentSpell(previousSpell)) {
+        previousSpell?.stop();
     }
     const selectedSpell = getSelectedSpell(player.id);
     const spell = getSpellFromId(selectedSpell, player);
@@ -28,6 +28,9 @@ customEvents.afterEvents.playerSlotChange.subscribe(({ player }) => {
     }
     else {
         const spell = activeSpells.get(player.id);
+        if (spell && isPersistentSpell(spell)) {
+            spell?.stop();
+        }
         if (spell) {
             activeSpells.set(player.id, null);
         }

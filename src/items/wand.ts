@@ -7,8 +7,8 @@ import {activeSpells} from "../core/activeSpellManager";
 import {LumosSpell} from "../spells/LumosSpell";
 import {PersistentSpell} from "../spells/PersistentSpell";
 
-function isPersistent(spell: any): spell is PersistentSpell {
-    return typeof spell.stop === "function" && "isActive" in spell;
+function isPersistentSpell(spell: any): spell is PersistentSpell {
+    return typeof spell?.stop === "function";
 }
 
 function isHoldingWand(player: Player) {
@@ -19,8 +19,8 @@ function isHoldingWand(player: Player) {
 
 function updateSpell(player: Player) {
     const previousSpell = activeSpells.get(player.id);
-    if (previousSpell && isPersistent(previousSpell)) {
-        previousSpell.stop();
+    if (previousSpell && isPersistentSpell(previousSpell)) {
+        previousSpell?.stop();
     }
     const selectedSpell = getSelectedSpell(player.id);
     const spell : Spell = getSpellFromId(selectedSpell, player);
@@ -36,6 +36,9 @@ customEvents.afterEvents.playerSlotChange.subscribe(({ player }) => {
     }
     else {
         const spell = activeSpells.get(player.id);
+        if (spell && isPersistentSpell(spell)) {
+            spell?.stop();
+        }
         if (spell) {
             activeSpells.set(player.id, null);
         }
