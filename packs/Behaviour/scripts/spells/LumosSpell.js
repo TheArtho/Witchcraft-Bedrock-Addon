@@ -1,5 +1,5 @@
 import { Spell, SpellIds } from "./Spell";
-import { system, world } from "@minecraft/server";
+import { system } from "@minecraft/server";
 import { MinecraftTextColor } from "../utils/MinecraftTextColor";
 ;
 export class LumosSpell extends Spell {
@@ -16,33 +16,18 @@ export class LumosSpell extends Spell {
         if (previousPos) {
             this.setLightBlock(previousPos, caster);
         }
-        const playerLeaveEvent = (event) => {
-            system.run(() => {
-                if (caster.id == event.player.id && previousPos) {
-                    this.clearLightBlock(previousPos, caster.dimension);
-                }
-                if (this.entity && this.entity.isValid) {
-                    this.entity.triggerEvent("minecraft:despawn_now");
-                }
-            });
-            if (interval) {
-                system.clearRun(interval);
-            }
-        };
         // @ts-ignore
         this.entity = caster.dimension.spawnEntity("witchcraft:lumos_entity", previousPos ?? caster.location);
         this.entity.addTag(`lumos:${caster.id}`);
-        // Subscribe an event
-        world.beforeEvents.playerLeave.subscribe(playerLeaveEvent);
         const interval = system.runInterval(() => {
             if (!caster.isValid) {
+                console.log(`[Witchcraft] ${caster.name} disconnected, cleaning the lumos light...`);
                 if (previousPos) {
                     this.clearLightBlock(previousPos, caster.dimension);
                 }
                 if (this.entity && this.entity.isValid) {
                     this.entity.triggerEvent("minecraft:despawn_now");
                 }
-                world.beforeEvents.playerLeave.unsubscribe(playerLeaveEvent);
                 system.clearRun(interval);
                 return;
             }
@@ -70,7 +55,6 @@ export class LumosSpell extends Spell {
                 if (this.entity && this.entity.isValid) {
                     this.entity.triggerEvent("minecraft:despawn_now");
                 }
-                world.beforeEvents.playerLeave.unsubscribe(playerLeaveEvent);
                 system.clearRun(interval);
             }
         });

@@ -22,37 +22,19 @@ export class LumosSpell extends Spell {
             this.setLightBlock(previousPos, caster);
         }
 
-        const playerLeaveEvent = (event: PlayerLeaveBeforeEvent) => {
-            system.run(() => {
-                if (caster.id == event.player.id && previousPos) {
-
-                    this.clearLightBlock(previousPos!, caster.dimension);
-                }
-                if (this.entity && this.entity.isValid) {
-                    this.entity.triggerEvent("minecraft:despawn_now")
-                }
-            });
-            if (interval) {
-                system.clearRun(interval);
-            }
-        };
-
         // @ts-ignore
         this.entity = caster.dimension.spawnEntity("witchcraft:lumos_entity", previousPos ?? caster.location)
         this.entity.addTag(`lumos:${caster.id}`)
 
-        // Subscribe an event
-        world.beforeEvents.playerLeave.subscribe(playerLeaveEvent);
-
         const interval = system.runInterval(() => {
             if (!caster.isValid) {
+                console.log(`[Witchcraft] ${caster.name} disconnected, cleaning the lumos light...`)
                 if (previousPos) {
                     this.clearLightBlock(previousPos, caster.dimension);
                 }
                 if (this.entity && this.entity.isValid) {
                     this.entity.triggerEvent("minecraft:despawn_now")
                 }
-                world.beforeEvents.playerLeave.unsubscribe(playerLeaveEvent);
                 system.clearRun(interval);
                 return;
             }
@@ -82,7 +64,6 @@ export class LumosSpell extends Spell {
                 if (this.entity && this.entity.isValid) {
                     this.entity.triggerEvent("minecraft:despawn_now")
                 }
-                world.beforeEvents.playerLeave.unsubscribe(playerLeaveEvent);
                 system.clearRun(interval);
             }
         });
