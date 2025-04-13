@@ -1,16 +1,36 @@
 import { EntityComponentTypes, EquipmentSlot, system, world } from "@minecraft/server";
 import { cycleSpell, getSelectedSpell } from "../interface/spellMenu";
+import { SpellIds } from "../spells/Spell";
 import { getSpellFromId } from "../spells/spellRegistry";
 import { customEvents } from "../events/customEventHandler";
+import { activeSpells } from "../core/activeSpellManager";
+function isPersistent(spell) {
+    return typeof spell.stop === "function" && "isActive" in spell;
+}
 function isHoldingWand(player) {
     const item = player.getComponent(EntityComponentTypes.Equippable)?.getEquipment(EquipmentSlot.Mainhand)
         ?? player.getComponent("inventory")?.container.getItem(player.selectedSlotIndex);
     return item?.typeId === "witchcraft:wizard_wand";
 }
+function updateSpell(player) {
+    const previousSpell = activeSpells.get(player.id);
+    if (previousSpell && isPersistent(previousSpell)) {
+        previousSpell.stop();
+    }
+    const selectedSpell = getSelectedSpell(player.id);
+    const spell = getSpellFromId(selectedSpell, player);
+    spell.setActiveSpell();
+    system.run(() => player.runCommand(`titleraw @s actionbar {"rawtext":[{"text":"Sort sélectionné : ${spell.color}${spell.name}"}]}`));
+}
 customEvents.afterEvents.playerSlotChange.subscribe(({ player }) => {
-    // console.log(`${event.player.name} changed slot from ${event.previousSlot} to ${event.currentSlot}`);
     if (isHoldingWand(player)) {
-        player.playSound("random.orb", { pitch: 0.5, volume: 0.5 });
+        updateSpell(player);
+    }
+    else {
+        const spell = activeSpells.get(player.id);
+        if (spell) {
+            activeSpells.set(player.id, null);
+        }
     }
 });
 world.afterEvents.playerJoin.subscribe(({ playerId }) => {
@@ -18,7 +38,7 @@ world.afterEvents.playerJoin.subscribe(({ playerId }) => {
     system.runTimeout(() => {
         const player = world.getPlayers().find(p => p.id === playerId);
         if (player && isHoldingWand(player)) {
-            player.playSound("random.orb", { pitch: 0.5, volume: 0.5 });
+            updateSpell(player);
         }
     }, 1);
 });
@@ -34,12 +54,13 @@ world.afterEvents.itemUse.subscribe((event) => {
             pitch: 0.5,
             volume: 0.5
         });
-        const selectedSpell = getSelectedSpell(player.id);
-        const spell = getSpellFromId(selectedSpell);
-        system.run(() => player.runCommand(`titleraw @s actionbar {"rawtext":[{"text":"Sort sélectionné : ${spell.color}${spell.name}"}]}`));
+        updateSpell(player);
         return;
     }
-    const selectedSpell = getSelectedSpell(player.id);
-    const spell = getSpellFromId(selectedSpell);
-    spell.cast(player);
+    let spell = activeSpells.get(player.id);
+    if (!spell) {
+        spell = getSpellFromId(SpellIds.Lumos, player);
+        spell.setActiveSpell();
+    }
+    spell?.cast();
 });

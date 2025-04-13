@@ -1,63 +1,74 @@
 import { Spell, SpellIds } from "./Spell";
 import { system } from "@minecraft/server";
 import { MinecraftTextColor } from "../utils/MinecraftTextColor";
-;
 export class LumosSpell extends Spell {
-    constructor() {
-        super(SpellIds.Lumos, "Lumos", "Éclaire autour de l'utilisateur.", MinecraftTextColor.Gold);
+    constructor(caster) {
+        super(SpellIds.Lumos, "Lumos", "Éclaire autour de l'utilisateur.", MinecraftTextColor.Gold, caster);
         this.entity = null;
+        this.previousPos = null;
+        this.isActive = false;
     }
-    cast(caster) {
-        caster.sendMessage("§eLumos!");
-        caster.playSound("random.orb", { pitch: 1, volume: 0.5 });
-        const durationTicks = 200;
-        let age = 0;
-        let previousPos = this.findLightPlacement(caster, null);
-        if (previousPos) {
-            this.setLightBlock(previousPos, caster);
+    cast() {
+        if (!this.isActive) {
+            this.caster.sendMessage("§eLumos!");
+            this.caster.playSound("random.orb", { pitch: 1, volume: 0.5 });
+            this.start();
         }
+        else {
+            this.stop();
+        }
+    }
+    start() {
+        if (this.isActive)
+            return;
+        this.isActive = true;
         // @ts-ignore
-        this.entity = caster.dimension.spawnEntity("witchcraft:lumos_entity", previousPos ?? caster.location);
-        this.entity.addTag(`lumos:${caster.id}`);
-        const interval = system.runInterval(() => {
-            if (!caster.isValid) {
-                console.log(`[Witchcraft] ${caster.name} disconnected, cleaning the lumos light...`);
-                if (previousPos) {
-                    this.clearLightBlock(previousPos, caster.dimension);
-                }
-                if (this.entity && this.entity.isValid) {
-                    this.entity.triggerEvent("minecraft:despawn_now");
-                }
-                system.clearRun(interval);
+        this.entity = this.caster.dimension.spawnEntity("witchcraft:lumos_entity", this.caster.location);
+        this.previousPos = this.findLightPlacement(this.caster, null);
+        if (this.previousPos) {
+            this.setLightBlock(this.previousPos, this.caster);
+        }
+        this.entity?.addTag(`lumos:${this.caster.id}`);
+        this.interval = system.runInterval(() => {
+            if (!this.isActive)
+                return;
+            if (!this.caster.isValid) {
+                console.log(`[Witchcraft] ${this.caster.name} disconnected, cleaning the lumos light...`);
+                this.stop();
                 return;
             }
-            const currentPos = this.findLightPlacement(caster, previousPos);
+            const currentPos = this.findLightPlacement(this.caster, this.previousPos);
             if (currentPos) {
-                if (!this.samePosition(currentPos, previousPos)) {
-                    this.setLightBlock(currentPos, caster);
-                    if (previousPos) {
-                        this.clearLightBlock(previousPos, caster.dimension);
+                if (!this.samePosition(currentPos, this.previousPos)) {
+                    this.setLightBlock(currentPos, this.caster);
+                    if (this.previousPos) {
+                        this.clearLightBlock(this.previousPos, this.caster.dimension);
                     }
-                    previousPos = currentPos;
+                    this.previousPos = currentPos;
                 }
             }
-            else if (previousPos) {
+            else if (this.previousPos) {
                 // No valid light position found, clear previous one
-                this.clearLightBlock(previousPos, caster.dimension);
-                previousPos = null;
-            }
-            age++;
-            if (age >= durationTicks) {
-                caster.playSound("random.orb", { pitch: 0.5, volume: 0.5 });
-                if (previousPos) {
-                    this.clearLightBlock(previousPos, caster.dimension);
-                }
-                if (this.entity && this.entity.isValid) {
-                    this.entity.triggerEvent("minecraft:despawn_now");
-                }
-                system.clearRun(interval);
+                this.clearLightBlock(this.previousPos, this.caster.dimension);
+                this.previousPos = null;
             }
         });
+    }
+    stop() {
+        if (!this.isActive)
+            return;
+        this.isActive = false;
+        if (this.interval) {
+            system.clearRun(this.interval);
+            this.interval = undefined;
+        }
+        if (this.entity?.isValid) {
+            this.entity.triggerEvent("minecraft:despawn_now");
+        }
+        if (this.previousPos) {
+            this.clearLightBlock(this.previousPos, this.caster.dimension);
+            this.previousPos = null;
+        }
     }
     findLightPlacement(player, previousPos) {
         const dim = player.dimension;

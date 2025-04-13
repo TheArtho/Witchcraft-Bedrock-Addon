@@ -3,7 +3,7 @@ import {Player} from "@minecraft/server";
 import {spawnMagicProjectile} from "../projectiles/magicProjectile";
 
 export class ProjectileSpell extends Spell {
-    cast(caster: Player): void {
-        spawnMagicProjectile(caster, this)
+    cast(): void {
+        spawnMagicProjectile(this.caster, this)
     }
 }

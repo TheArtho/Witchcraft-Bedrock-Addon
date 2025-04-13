@@ -5,8 +5,8 @@ import {MinecraftTextColor} from "../utils/MinecraftTextColor";
 
 export class FulmenSpell extends ProjectileSpell {
 
-    constructor() {
-        super(SpellIds.Fulmen, "Fulmen", "Invoque la foudre sur la cible.", MinecraftTextColor.Yellow);
+    constructor(caster: Player) {
+        super(SpellIds.Fulmen, "Fulmen", "Invoque la foudre sur la cible.", MinecraftTextColor.Yellow, caster);
     }
 
     onEntityHit(caster: Player, target: Entity) {

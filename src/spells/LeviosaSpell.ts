@@ -5,8 +5,8 @@ import {MinecraftTextColor} from "../utils/MinecraftTextColor";
 
 export class LeviosaSpell extends ProjectileSpell {
 
-    constructor() {
-        super(SpellIds.Leviosa, "Leviosa", "Projette l'adversaire vers le ciel.", MinecraftTextColor.Aqua);
+    constructor(caster: Player) {
+        super(SpellIds.Leviosa, "Leviosa", "Projette l'adversaire vers le ciel.", MinecraftTextColor.Aqua, caster);
     }
 
     onEntityHit(caster: Player, target: Entity) {

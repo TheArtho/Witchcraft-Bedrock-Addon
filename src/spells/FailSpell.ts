@@ -3,12 +3,11 @@ import {Spell, SpellIds} from "./Spell";
 import {MinecraftTextColor} from "../utils/MinecraftTextColor";
 
 export class FailSpell extends Spell {
-
-    constructor() {
-        super(SpellIds.Fail, "Failed", "Tu as raté ton sort...", MinecraftTextColor.White);
+    constructor(caster: Player) {
+        super(SpellIds.Fail, "Failed", "Tu as raté ton sort...", MinecraftTextColor.White, caster);
     }
 
-    cast(caster: Player): void {
-        caster.sendMessage("Whoops...");
+    cast(): void {
+        this.caster.sendMessage("Whoops...");
     }
 }
