@@ -1,8 +1,7 @@
-import "./items/wand.js";
-import {slotChangeEvents} from "./events/slotEvents";
+import "./items/wand";
+import "./events/customEventHandler"
+import {customEvents} from "./events/customEventHandler";
 
-/*
-slotChangeEvents.subscribe((player, from, to) => {
-    // console.log(`${player.name} changed slot from ${from} to ${to}`);
+customEvents.playerSlotChange.subscribe(event => {
+    console.log(`${event.player.name} changed slot from ${event.previousSlot} to ${event.currentSlot}`);
 })
- */

@@ -63,7 +63,7 @@ export class LumosSpell extends Spell {
             z: Math.floor(base.z)
         };
 
-        // TODO Adapt the offset closest position depending on where you are place inside the block
+        // TODO Adapt the offset closest position depending on where you are placed inside the block
         const offsets = [
             { x: 0, y: 0, z: 0 },
             { x: 0, y: 1, z: 0 },
