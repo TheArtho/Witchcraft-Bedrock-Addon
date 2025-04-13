@@ -1,4 +1,4 @@
-import {Entity, Player} from "@minecraft/server";
+import {Block, Entity, Player} from "@minecraft/server";
 import {MinecraftTextColor} from "../utils/MinecraftTextColor";
 
 export enum SpellIds {
@@ -24,5 +24,5 @@ export abstract class Spell {
     abstract cast(caster: Player): void;
 
     onEntityHit?(caster: Player, target: Entity): void;
-    onBlockHit?(caster: Player, blockTypeId: string): void;
+    onBlockHit?(caster: Player, block : Block): void;
 }

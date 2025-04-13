@@ -1,8 +1,6 @@
 import { system, world } from "@minecraft/server";
-
 const listeners = [];
 const lastSlotMap = new Map();
-
 export const slotChangeEvents = {
     subscribe(callback) {
         listeners.push(callback);
@@ -26,4 +24,3 @@ system.runInterval(() => {
         lastSlotMap.set(player.id, current);
     }
 }, 2); // every 2 ticks
-console.log("slot Event set interval");

@@ -1,5 +1,5 @@
 import { Spell, SpellIds } from "./Spell";
-import { Player, system, Vector3 } from "@minecraft/server";
+import { Dimension, Player, system, Vector3 } from "@minecraft/server";
 import { MinecraftTextColor } from "../utils/MinecraftTextColor";
 
 export class LumosSpell extends Spell {
@@ -11,34 +11,13 @@ export class LumosSpell extends Spell {
         caster.sendMessage("§eLumos!");
         caster.playSound("random.orb", { pitch: 1, volume: 0.5 });
 
-        const durationTicks = 200; // 10 seconds
+        const durationTicks = 200;
         let age = 0;
 
-        const getLightPos = (): Vector3 => {
-            const loc = caster.location;
-            return {
-                x: Math.floor(loc.x),
-                y: Math.floor(loc.y + 1.5),
-                z: Math.floor(loc.z)
-            };
-        };
-
-        const setLightBlock = (pos: Vector3) => {
-            const block = caster.dimension.getBlock(pos);
-            if (block?.typeId === "minecraft:air") {
-                caster.dimension.setBlockType(pos, "minecraft:light_block_15");
-            }
-        };
-
-        const clearLightBlock = (pos: Vector3) => {
-            const block = caster.dimension.getBlock(pos);
-            if (block?.typeId === "minecraft:light_block_15") {
-                caster.dimension.setBlockType(pos, "minecraft:air");
-            }
-        };
-
-        let previousPos = getLightPos();
-        setLightBlock(previousPos); // Initial light block
+        let previousPos: Vector3 | null = this.findLightPlacement(caster, null);
+        if (previousPos) {
+            this.setLightBlock(previousPos, caster.dimension);
+        }
 
         const interval = system.runInterval(() => {
             if (!caster.isValid) {
@@ -46,25 +25,95 @@ export class LumosSpell extends Spell {
                 return;
             }
 
-            const currentPos = getLightPos();
+            const currentPos = this.findLightPlacement(caster, previousPos);
 
-            // If player moved to a new block position
-            if (
-                currentPos.x !== previousPos.x ||
-                currentPos.y !== previousPos.y ||
-                currentPos.z !== previousPos.z
-            ) {
-                setLightBlock(currentPos);    // Place new light block
-                clearLightBlock(previousPos); // Remove previous one
-                previousPos = currentPos;
+            if (currentPos) {
+                if (!this.samePosition(currentPos, previousPos)) {
+                    this.setLightBlock(currentPos, caster.dimension);
+                    if (previousPos) {
+                        this.clearLightBlock(previousPos, caster.dimension);
+                    }
+                    previousPos = currentPos;
+                }
+            } else if (previousPos) {
+                // No valid light position found, clear previous one
+                this.clearLightBlock(previousPos, caster.dimension);
+                previousPos = null;
             }
 
             age++;
             if (age >= durationTicks) {
-                clearLightBlock(currentPos); // Clean up final light block
-                caster.playSound("random.orb", { pitch: 0.5, volume: 0.5 }); // End sound
+                if (previousPos) {
+                    this.clearLightBlock(previousPos, caster.dimension);
+                }
+                caster.playSound("random.orb", { pitch: 0.5, volume: 0.5 });
                 system.clearRun(interval);
             }
         });
+    }
+
+    private findLightPlacement(player: Player, previousPos : Vector3 | null): Vector3 | null {
+        const dim = player.dimension;
+
+        // Fallback to finding a new empty/lightable position
+        const base = player.location;
+        const basePos = {
+            x: Math.floor(base.x),
+            y: Math.floor(base.y + 1.5),    // add 1.5 to reach the head location
+            z: Math.floor(base.z)
+        };
+
+        // TODO Adapt the offset closest position depending on where you are place inside the block
+        const offsets = [
+            { x: 0, y: 0, z: 0 },
+            { x: 0, y: 1, z: 0 },
+            { x: 0, y: 2, z: 0 },
+            { x: 1, y: 1, z: 0 },
+            { x: -1, y: 1, z: 0 },
+            { x: 0, y: 1, z: 1 },
+            { x: 0, y: 1, z: -1 }
+        ];
+
+        // Sweep around the base position if needed
+        for (const offset of offsets) {
+            const pos: Vector3 = {
+                x: basePos.x + offset.x,
+                y: basePos.y + offset.y,
+                z: basePos.z + offset.z
+            };
+
+            // If previous block is still a valid light block, reuse it
+            if (previousPos) {
+                if (this.samePosition(pos, previousPos)) {
+                    return previousPos;
+                }
+            }
+
+            const block = dim.getBlock(pos);
+            if (block?.typeId === "minecraft:air") {
+                return pos;
+            }
+        }
+
+        return null;
+    }
+
+    private setLightBlock(pos: Vector3, dimension: Dimension): void {
+        const block = dimension.getBlock(pos);
+        if (block?.typeId === "minecraft:air") {
+            dimension.setBlockType(pos, "minecraft:light_block_15");
+        }
+    }
+
+    private clearLightBlock(pos: Vector3, dimension: Dimension): void {
+        const block = dimension.getBlock(pos);
+        if (block?.typeId === "minecraft:light_block_15") {
+            dimension.setBlockType(pos, "minecraft:air");
+        }
+    }
+
+    private samePosition(a: Vector3 | null, b: Vector3 | null): boolean {
+        if (!a || !b) return false;
+        return a.x === b.x && a.y === b.y && a.z === b.z;
     }
 }

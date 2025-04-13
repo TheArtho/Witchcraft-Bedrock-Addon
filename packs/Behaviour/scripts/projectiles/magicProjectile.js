@@ -96,11 +96,11 @@ export function spawnMagicProjectile(caster, spell) {
             const block = dimension.getBlock(nextPos);
             if (block) {
                 const type = block.typeId;
-                const isSolid = type !== "minecraft:air";
+                const isSolid = !block.isAir;
                 const passThrough = passThroughBlocks.includes(type);
                 if (isSolid && !passThrough) {
                     // console.log(`Projectile hit block: ${type}`);
-                    spell.onBlockHit?.(caster, type);
+                    spell.onBlockHit?.(caster, block);
                     if (projectile.isValid) {
                         projectile.triggerEvent("minecraft:despawn_now");
                     }
