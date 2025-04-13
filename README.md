@@ -1,56 +1,56 @@
-# 🧙‍♂️ Witchcraft - Addon Minecraft Bedrock
+# 🧙‍♂️ Witchcraft - Minecraft Bedrock Addon
 
-**Witchcraft** est un addon Minecraft Bedrock axé sur la magie, et les sorts. Ce projet utilise le scripting API `@minecraft/server` avec un environnement Node.js moderne et du TypeScript.
+**Witchcraft** is a Minecraft Bedrock addon focused on magic and spellcasting. This project uses the `@minecraft/server` scripting API with a modern Node.js and TypeScript development environment.
 
 ---
 
-## ⚙️ Prérequis
+## ⚙️ Requirements
 
-- [Node.js](https://nodejs.org/) v18 ou supérieur
+- [Node.js](https://nodejs.org/) v18 or higher
 - Minecraft Bedrock Edition (1.21.70+)
-- Activer le mode développeur (scripts & expérimental)
-- Un éditeur comme VS Code recommandé
+- Enable experimental gameplay & scripting in Minecraft
+- A code editor like VS Code is recommended
 
 ---
 
-## 📁 Structure du projet
+## 📁 Project Structure
 
 ```
 /Witchcraft
 ├── packs/
-│   ├── Behavior/            → Fichiers du behaviour pack (build cible)
-│   ├── Resource/            → Fichiers du resource pack (build cible)
-├── src/                     → Code TypeScript source
-├── scripts/                 → Logiciels de build et copie
-├── buildconfig.json         → Nom du mod (ex: Witchcraft)
+│   ├── Behavior/            → Output Behavior Pack files
+│   ├── Resource/            → Output Resource Pack files
+├── src/                     → TypeScript source code
+├── scripts/                 → Build and sync utilities
+├── buildconfig.json         → Contains the mod name (e.g., Witchcraft)
 ├── tsconfig.json
-└── build.js                 → Script de build
+└── build.js                 → Build script
 ```
 
 ---
 
-## 🧪 Développement local
+## 🧪 Local Development
 
-Le projet utilise **TypeScript** pour le scripting.
+The project is written in **TypeScript** using the Minecraft Scripting API.
 
-### 🛠 Compiler + déployer dans Minecraft
+### 🛠 Compile & Deploy to Minecraft
 
 ```bash
-# Installer les dépendances
+# Install dependencies
 npm install
 
-# Compiler le TypeScript + copier les fichiers vers les dossiers Minecraft
+# Compile TypeScript and copy output packs to the Minecraft dev folders
 npm run build
 ```
 
-### 🧹 Nettoyer + rebuild complet
+### 🧹 Clean and full rebuild
 
 ```bash
 npm run clean
 npm run build
 ```
 
-> Le script de build copie les packs dans :
+> The build script copies the packs into:
 >
 > ```
 > %LOCALAPPDATA%\Packages\Microsoft.MinecraftUWP_8wekyb3d8bbwe\
