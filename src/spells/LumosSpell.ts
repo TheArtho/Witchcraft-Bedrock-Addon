@@ -1,8 +1,11 @@
 import { Spell, SpellIds } from "./Spell";
-import { Dimension, Player, system, Vector3 } from "@minecraft/server";
-import { MinecraftTextColor } from "../utils/MinecraftTextColor";
+import {Dimension, Entity, Player, PlayerLeaveBeforeEvent, system, Vector3, world} from "@minecraft/server";
+import { MinecraftTextColor } from "../utils/MinecraftTextColor";;
 
 export class LumosSpell extends Spell {
+
+    entity: Entity | null = null;
+
     constructor() {
         super(SpellIds.Lumos, "Lumos", "Éclaire autour de l'utilisateur.", MinecraftTextColor.Gold);
     }
@@ -16,11 +19,40 @@ export class LumosSpell extends Spell {
 
         let previousPos: Vector3 | null = this.findLightPlacement(caster, null);
         if (previousPos) {
-            this.setLightBlock(previousPos, caster.dimension);
+            this.setLightBlock(previousPos, caster);
         }
+
+        const playerLeaveEvent = (event: PlayerLeaveBeforeEvent) => {
+            system.run(() => {
+                if (caster.id == event.player.id && previousPos) {
+
+                    this.clearLightBlock(previousPos!, caster.dimension);
+                }
+                if (this.entity && this.entity.isValid) {
+                    this.entity.triggerEvent("minecraft:despawn_now")
+                }
+            });
+            if (interval) {
+                system.clearRun(interval);
+            }
+        };
+
+        // @ts-ignore
+        this.entity = caster.dimension.spawnEntity("witchcraft:lumos_entity", previousPos ?? caster.location)
+        this.entity.addTag(`lumos:${caster.id}`)
+
+        // Subscribe an event
+        world.beforeEvents.playerLeave.subscribe(playerLeaveEvent);
 
         const interval = system.runInterval(() => {
             if (!caster.isValid) {
+                if (previousPos) {
+                    this.clearLightBlock(previousPos, caster.dimension);
+                }
+                if (this.entity && this.entity.isValid) {
+                    this.entity.triggerEvent("minecraft:despawn_now")
+                }
+                world.beforeEvents.playerLeave.unsubscribe(playerLeaveEvent);
                 system.clearRun(interval);
                 return;
             }
@@ -29,7 +61,7 @@ export class LumosSpell extends Spell {
 
             if (currentPos) {
                 if (!this.samePosition(currentPos, previousPos)) {
-                    this.setLightBlock(currentPos, caster.dimension);
+                    this.setLightBlock(currentPos, caster);
                     if (previousPos) {
                         this.clearLightBlock(previousPos, caster.dimension);
                     }
@@ -43,10 +75,14 @@ export class LumosSpell extends Spell {
 
             age++;
             if (age >= durationTicks) {
+                caster.playSound("random.orb", { pitch: 0.5, volume: 0.5 });
                 if (previousPos) {
                     this.clearLightBlock(previousPos, caster.dimension);
                 }
-                caster.playSound("random.orb", { pitch: 0.5, volume: 0.5 });
+                if (this.entity && this.entity.isValid) {
+                    this.entity.triggerEvent("minecraft:despawn_now")
+                }
+                world.beforeEvents.playerLeave.unsubscribe(playerLeaveEvent);
                 system.clearRun(interval);
             }
         });
@@ -98,10 +134,12 @@ export class LumosSpell extends Spell {
         return null;
     }
 
-    private setLightBlock(pos: Vector3, dimension: Dimension): void {
+    private setLightBlock(pos: Vector3, caster: Player): void {
+        const dimension = caster.dimension;
         const block = dimension.getBlock(pos);
         if (block?.typeId === "minecraft:air") {
             dimension.setBlockType(pos, "minecraft:light_block_15");
+            this.registerLightPosition(pos);
         }
     }
 
@@ -115,5 +153,9 @@ export class LumosSpell extends Spell {
     private samePosition(a: Vector3 | null, b: Vector3 | null): boolean {
         if (!a || !b) return false;
         return a.x === b.x && a.y === b.y && a.z === b.z;
+    }
+
+    private registerLightPosition(pos: Vector3) {
+        this.entity?.teleport(pos);
     }
 }

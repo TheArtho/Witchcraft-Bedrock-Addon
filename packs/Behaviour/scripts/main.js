@@ -1,6 +1,4 @@
-import "./items/wand.js";
-/*
-slotChangeEvents.subscribe((player, from, to) => {
-    // console.log(`${player.name} changed slot from ${from} to ${to}`);
-})
- */ 
+import "./items/wand";
+import "./events/customEventHandler";
+import { initMod } from "./init";
+initMod();

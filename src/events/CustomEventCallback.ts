@@ -1,1 +1,0 @@
-export type CustomEventCallback<T> = (data: T) => void;
