@@ -46,8 +46,7 @@ npm run build
 ### 🧹 Clean and full rebuild
 
 ```bash
-npm run clean
-npm run build
+npm run build:clean
 ```
 
 > The build script copies the packs into:
