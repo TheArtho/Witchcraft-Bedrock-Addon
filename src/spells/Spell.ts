@@ -4,9 +4,9 @@ import {activeSpells} from "../core/activeSpellManager";
 
 export enum SpellIds {
     Fail = -1,
-    Leviosa,
-    Lumos,
-    Fulmen
+    Leviosa = 1,
+    Lumos = 2,
+    Fulmen = 3
 }
 
 export abstract class Spell {

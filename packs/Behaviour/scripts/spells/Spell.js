@@ -2,9 +2,9 @@ import { activeSpells } from "../core/activeSpellManager";
 export var SpellIds;
 (function (SpellIds) {
     SpellIds[SpellIds["Fail"] = -1] = "Fail";
-    SpellIds[SpellIds["Leviosa"] = 0] = "Leviosa";
-    SpellIds[SpellIds["Lumos"] = 1] = "Lumos";
-    SpellIds[SpellIds["Fulmen"] = 2] = "Fulmen";
+    SpellIds[SpellIds["Leviosa"] = 1] = "Leviosa";
+    SpellIds[SpellIds["Lumos"] = 2] = "Lumos";
+    SpellIds[SpellIds["Fulmen"] = 3] = "Fulmen";
 })(SpellIds || (SpellIds = {}));
 export class Spell {
     constructor(id, name, description, color, caster) {

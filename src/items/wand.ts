@@ -4,8 +4,8 @@ import {Spell, SpellIds} from "../spells/Spell";
 import {getSpellFromId} from "../spells/spellRegistry";
 import {customEvents} from "../events/customEventHandler";
 import {activeSpells} from "../core/activeSpellManager";
-import {LumosSpell} from "../spells/LumosSpell";
 import {PersistentSpell} from "../spells/PersistentSpell";
+import {playerData, PlayerData} from "../player/PlayerData";
 
 function isPersistentSpell(spell: any): spell is PersistentSpell {
     return typeof spell?.stop === "function";
@@ -75,7 +75,8 @@ world.afterEvents.itemUse.subscribe((event) => {
 
     let spell = activeSpells.get(player.id);
     if (!spell) {
-        spell = getSpellFromId(SpellIds.Lumos, player);
+        const selectedSpell = getSelectedSpell(player.id);
+        spell = getSpellFromId(selectedSpell, player);
         spell.setActiveSpell();
     }
     spell?.cast();

@@ -1,6 +1,5 @@
 import { EntityComponentTypes, EquipmentSlot, system, world } from "@minecraft/server";
 import { cycleSpell, getSelectedSpell } from "../interface/spellMenu";
-import { SpellIds } from "../spells/Spell";
 import { getSpellFromId } from "../spells/spellRegistry";
 import { customEvents } from "../events/customEventHandler";
 import { activeSpells } from "../core/activeSpellManager";
@@ -62,7 +61,8 @@ world.afterEvents.itemUse.subscribe((event) => {
     }
     let spell = activeSpells.get(player.id);
     if (!spell) {
-        spell = getSpellFromId(SpellIds.Lumos, player);
+        const selectedSpell = getSelectedSpell(player.id);
+        spell = getSpellFromId(selectedSpell, player);
         spell.setActiveSpell();
     }
     spell?.cast();

@@ -1,16 +1,27 @@
 import { SpellIds } from "../spells/Spell";
-export const spellList = [
-    SpellIds.Lumos,
-    SpellIds.Leviosa,
-    SpellIds.Fulmen,
-];
-const playerSpells = new Map(); // player.id -> selectedSpellIndex
+import { playerData } from "../player/PlayerData";
 export function getSelectedSpell(playerId) {
-    const index = playerSpells.get(playerId) ?? 0;
-    return spellList[index];
+    if (playerData.has(playerId)) {
+        const data = playerData.get(playerId);
+        const index = data.selectedSpell;
+        if (data.spellList.length > 0) {
+            return data.spellList[index];
+        }
+        else {
+            console.log("return fail 1");
+            return SpellIds.Fail;
+        }
+    }
+    else {
+        console.log("return fail 2");
+        return SpellIds.Fail;
+    }
 }
 export function cycleSpell(playerId) {
-    const current = playerSpells.get(playerId) ?? 0;
-    const next = (current + 1) % spellList.length;
-    playerSpells.set(playerId, next);
+    if (playerData.has(playerId)) {
+        const data = playerData.get(playerId);
+        const current = data.selectedSpell;
+        const next = (current + 1) % data.spellList.length;
+        data.setSelectedSpell(next);
+    }
 }
