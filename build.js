@@ -4,11 +4,11 @@ const { execSync } = require("child_process");
 const config = require("./buildconfig.json");
 const modName = config.name || "MyMod";
 
-// Dossiers sources
 const behaviorPack = path.join(__dirname, "packs", "Behaviour");
 const resourcePack = path.join(__dirname, "packs", "Resource");
+const uiSourceDir = path.join(__dirname, "ui");
+const uiTargetDir = path.join(resourcePack, "ui");
 
-// Dossiers cibles de Minecraft Bedrock
 const mcDir = path.join(
     process.env.LOCALAPPDATA,
     "Packages",
@@ -20,7 +20,6 @@ const mcDir = path.join(
 const targetBP = path.join(mcDir, "development_behavior_packs", `${modName} BP`);
 const targetRP = path.join(mcDir, "development_resource_packs", `${modName} RP`);
 
-// Vérifie si le flag --clean est passé
 const shouldClean = process.argv.includes("--clean");
 
 async function cleanAndCopy(src, dest, name) {
@@ -35,23 +34,50 @@ async function cleanAndCopy(src, dest, name) {
     console.log(`[Build] Copie du ${name} terminé.`);
 }
 
+async function compileJsoncToJson(srcDir, destDir) {
+    const stripJsonComments = (await import("strip-json-comments")).default;
+
+    const entries = await fs.readdir(srcDir);
+    await fs.ensureDir(destDir);
+
+    for (const entry of entries) {
+        const srcPath = path.join(srcDir, entry);
+        const destPath = path.join(destDir, entry.replace(/\.jsonc$/, ".json"));
+        const stat = await fs.stat(srcPath);
+
+        if (stat.isDirectory()) {
+            await compileJsoncToJson(srcPath, path.join(destDir, entry));
+        } else if (entry.endsWith(".jsonc")) {
+            const raw = await fs.readFile(srcPath, "utf-8");
+            const json = stripJsonComments(raw);
+            await fs.writeFile(destPath, json, "utf-8");
+        } else {
+            await fs.copy(srcPath, path.join(destDir, entry));
+        }
+    }
+}
+
 (async () => {
     try {
         if (shouldClean) {
             const outDir = path.join(__dirname, "packs", "Behaviour", "scripts");
-
             console.log("[Clean] Vidage du dossier de compilation TypeScript...");
             await fs.emptyDir(outDir);
         }
+
         console.log("[Compiler] Compilation TypeScript...");
         execSync("npx tsc", { stdio: "inherit" });
-        console.log("[Compiler] Compilation Typescript terminée.");
+        console.log("[Compiler] Compilation TypeScript terminée.");
 
+        console.log("[UI] Compilation des fichiers .jsonc...");
+        await compileJsoncToJson(uiSourceDir, uiTargetDir);
+
+        console.log("Copie des packs vers Minecraft Bedrock...");
         await cleanAndCopy(behaviorPack, targetBP, "Behavior Pack");
         await cleanAndCopy(resourcePack, targetRP, "Resource Pack");
 
-        console.log("Build terminé.");
+        console.log("✅ Build terminé.");
     } catch (err) {
-        console.error("Erreur pendant la compilation ou la copie :", err);
+        console.error("❌ Erreur pendant la compilation ou la copie :", err);
     }
 })();
