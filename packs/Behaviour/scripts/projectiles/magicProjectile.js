@@ -52,6 +52,12 @@ export function spawnMagicProjectile(caster, spell) {
         let hit;
         if (!projectile.isValid) {
             system.clearRun(interval);
+            try {
+                projectile.kill();
+            }
+            catch (e) {
+                // Skip
+            }
             return;
         }
         // console.warn(`🔄 Tick ${age}`);

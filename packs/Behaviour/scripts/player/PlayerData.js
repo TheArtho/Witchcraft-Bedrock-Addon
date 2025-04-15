@@ -7,7 +7,8 @@ export class PlayerData {
         this.spellList = [
             SpellIds.Lumos,
             SpellIds.Leviosa,
-            SpellIds.Fulmen
+            SpellIds.Fulmen,
+            SpellIds.Reparo
         ];
         if (data) {
             try {
@@ -34,6 +35,5 @@ export class PlayerData {
         if (index < 0) {
             this.selectedSpell = 0;
         }
-        console.log(this.selectedSpell);
     }
 }

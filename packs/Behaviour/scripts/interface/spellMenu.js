@@ -8,12 +8,10 @@ export function getSelectedSpell(playerId) {
             return data.spellList[index];
         }
         else {
-            console.log("return fail 1");
             return SpellIds.Fail;
         }
     }
     else {
-        console.log("return fail 2");
         return SpellIds.Fail;
     }
 }

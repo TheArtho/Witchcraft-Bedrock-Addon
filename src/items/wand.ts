@@ -5,7 +5,7 @@ import {getSpellFromId} from "../spells/spellRegistry";
 import {customEvents} from "../events/customEventHandler";
 import {activeSpells} from "../core/activeSpellManager";
 import {PersistentSpell} from "../spells/PersistentSpell";
-import {playerData, PlayerData} from "../player/PlayerData";
+import {ReparoSpell} from "../spells/ReparoSpell";
 
 function isPersistentSpell(spell: any): spell is PersistentSpell {
     return typeof spell?.stop === "function";
@@ -28,6 +28,16 @@ function updateSpell(player: Player) {
     system.run(
         () => player.runCommand(`titleraw @s actionbar {"rawtext":[{"text":"Sort sélectionné : ${spell.color}${spell.name}"}]}`)
     );
+}
+
+function castSpell(player : Player) {
+    let spell = activeSpells.get(player.id);
+    if (!spell) {
+        const selectedSpell = getSelectedSpell(player.id);
+        spell = getSpellFromId(selectedSpell, player);
+        spell.setActiveSpell();
+    }
+    spell?.cast();
 }
 
 customEvents.afterEvents.playerSlotChange.subscribe(({ player }) => {
@@ -72,12 +82,18 @@ world.afterEvents.itemUse.subscribe((event) => {
         return;
     }
 
-
-    let spell = activeSpells.get(player.id);
-    if (!spell) {
-        const selectedSpell = getSelectedSpell(player.id);
-        spell = getSpellFromId(selectedSpell, player);
-        spell.setActiveSpell();
-    }
-    spell?.cast();
+    castSpell(player);
 });
+
+world.beforeEvents.playerInteractWithBlock.subscribe((event) => {
+    const player = event.player;
+
+    // Cast spell for Reparo
+    if (isHoldingWand(player) &&
+        getSelectedSpell(player.id) == SpellIds.Reparo &&
+        ReparoSpell.getNonInteractableBlocks().includes(event.block.typeId))
+    {
+        system.run(() => castSpell(player));
+        event.cancel = true;
+    }
+})

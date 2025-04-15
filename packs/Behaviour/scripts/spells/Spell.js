@@ -5,6 +5,7 @@ export var SpellIds;
     SpellIds[SpellIds["Leviosa"] = 1] = "Leviosa";
     SpellIds[SpellIds["Lumos"] = 2] = "Lumos";
     SpellIds[SpellIds["Fulmen"] = 3] = "Fulmen";
+    SpellIds[SpellIds["Reparo"] = 4] = "Reparo";
 })(SpellIds || (SpellIds = {}));
 export class Spell {
     constructor(id, name, description, color, caster) {

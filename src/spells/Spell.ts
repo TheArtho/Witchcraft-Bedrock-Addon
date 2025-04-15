@@ -6,7 +6,8 @@ export enum SpellIds {
     Fail = -1,
     Leviosa = 1,
     Lumos = 2,
-    Fulmen = 3
+    Fulmen = 3,
+    Reparo = 4
 }
 
 export abstract class Spell {

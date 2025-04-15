@@ -2,7 +2,7 @@ import {Player, system, world} from "@minecraft/server";
 import {PlayerDataManager} from "../player/PlayerDataManager";
 import {playerData} from "../player/PlayerData";
 
-const FORCE_RESET_DATA : Boolean = false;
+const FORCE_RESET_DATA : Boolean = true;
 
 function SavePlayerData(player : Player) {
     if (player && playerData.has(player.id)) {
@@ -21,8 +21,6 @@ export function LoadPlayerData(player : Player) {
         playerData.set(player.id, PlayerDataManager.load(player));
         console.log(`[Witchcraft] PlayerData loaded for ${player.name}`);
     }
-
-    console.log(`selected spell is ${playerData?.get(player.id)?.selectedSpell}`);
 }
 
 // Loads data when player joins

@@ -63,6 +63,12 @@ export function spawnMagicProjectile(caster: Player, spell : ProjectileSpell) {
 
         if (!projectile.isValid) {
             system.clearRun(interval);
+            try {
+                projectile.kill();
+            }
+            catch (e) {
+                // Skip
+            }
             return;
         }
 

@@ -8,7 +8,8 @@ export class PlayerData {
     spellList: SpellIds[] = [
         SpellIds.Lumos,
         SpellIds.Leviosa,
-        SpellIds.Fulmen
+        SpellIds.Fulmen,
+        SpellIds.Reparo
     ];
 
     constructor(data?: Partial<PlayerData>) {
@@ -45,7 +46,5 @@ export class PlayerData {
         if (index < 0) {
             this.selectedSpell = 0;
         }
-
-        console.log(this.selectedSpell)
     }
 }
