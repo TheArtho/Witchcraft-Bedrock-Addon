@@ -75,7 +75,7 @@ export class PlayerData {
             0, 100));  // Integer [0 - 100]
         const manaText = `Mana: ${mana}/${maxMana}`;
 
-        const titles = [`ui_mana_text:${manaText}`, `ui_mana_clip_ratio:${manaClipRatio}`]
+        const titles = [`ui_mana_clip_ratio:${manaClipRatio}`, `ui_mana_text:${manaText}`]
 
         this.setTitle(player, titles);
     }
@@ -95,17 +95,11 @@ export class PlayerData {
         return world.getPlayers().find(p => p.id == this.playerId)
     }
 
-    private setTitle(player : Player, titles : string[]) {
-        let index : number = 0;
-
-        const interval = system.runInterval(() => {
-            // player.dimension.runCommand(`title @a times 0 0 0`)
-            player.dimension.runCommand(`title @a title ${titles[index]}`)
-            index++;
-
-            if (index >= titles.length) {
-                system.clearRun(interval);
-            }
+    private setTitle(player: Player, titles: string[]) {
+        titles.forEach((title, i) => {
+            system.runTimeout(() => {
+                player.runCommand(`title @s title ${title}`);
+            }, i); // 5 ticks entre chaque titre
         });
     }
 }

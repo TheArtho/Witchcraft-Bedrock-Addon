@@ -1,13 +1,13 @@
 import { Player } from "@minecraft/server";
-import thunder from "./thunder";
+import {fillMana} from "./fillMana";
 
 export const commandRegistry = new Map([
-    ["thunder", thunder],
+    ["fillMana", fillMana],
 ]);
 
-export function handleCommand(name: string, player: Player, args: string[]) {
+export function handleCommand(name: string, player: Player, args?: string[]) {
     const command = commandRegistry.get(name);
     if (command) {
-      command(player);
+      command(player, args);
     }
-  }
+}

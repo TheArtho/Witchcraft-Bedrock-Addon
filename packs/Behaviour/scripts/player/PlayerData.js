@@ -58,7 +58,7 @@ export class PlayerData {
         const maxMana = Math.ceil(this.maxMana); // Integer
         const manaClipRatio = (MathUtils.clamp(Math.ceil((1 - (this.mana / this.maxMana)) * 100), 0, 100)); // Integer [0 - 100]
         const manaText = `Mana: ${mana}/${maxMana}`;
-        const titles = [`ui_mana_text:${manaText}`, `ui_mana_clip_ratio:${manaClipRatio}`];
+        const titles = [`ui_mana_clip_ratio:${manaClipRatio}`, `ui_mana_text:${manaText}`];
         this.setTitle(player, titles);
     }
     setSelectedSpell(index) {
@@ -74,14 +74,10 @@ export class PlayerData {
         return world.getPlayers().find(p => p.id == this.playerId);
     }
     setTitle(player, titles) {
-        let index = 0;
-        const interval = system.runInterval(() => {
-            // player.dimension.runCommand(`title @a times 0 0 0`)
-            player.dimension.runCommand(`title @a title ${titles[index]}`);
-            index++;
-            if (index >= titles.length) {
-                system.clearRun(interval);
-            }
+        titles.forEach((title, i) => {
+            system.runTimeout(() => {
+                player.runCommand(`title @s title ${title}`);
+            }, i); // 5 ticks entre chaque titre
         });
     }
 }

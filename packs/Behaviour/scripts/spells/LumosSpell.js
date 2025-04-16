@@ -8,15 +8,25 @@ export class LumosSpell extends Spell {
         this.entity = null;
         this.previousPos = null;
         this.isActive = false;
+        this.manaCost = 1;
     }
     cast() {
-        if (!this.isActive) {
-            this.caster.sendMessage("§eLumos!");
-            this.caster.playSound("random.orb", { pitch: 1, volume: 0.5 });
-            this.start();
+        try {
+            if (!this.hasEnoughMana()) {
+                this.caster.sendMessage("Not enough mana to cast this spell.");
+                return;
+            }
+            if (!this.isActive) {
+                this.caster.sendMessage("§eLumos!");
+                this.caster.playSound("random.orb", { pitch: 1, volume: 0.5 });
+                this.start();
+            }
+            else {
+                this.stop();
+            }
         }
-        else {
-            this.stop();
+        catch (e) {
+            // Skip
         }
     }
     start() {
@@ -54,7 +64,10 @@ export class LumosSpell extends Spell {
                 this.previousPos = null;
             }
             // Decrease the mana
-            playerData.get(this.caster.id)?.decreaseMana(0.25);
+            playerData.get(this.caster.id)?.decreaseMana(this.manaCost);
+            if (!this.hasEnoughMana()) {
+                this.stop();
+            }
         }, 5);
     }
     stop() {
@@ -133,5 +146,8 @@ export class LumosSpell extends Spell {
     }
     registerLightPosition(pos) {
         this.entity?.teleport(pos);
+    }
+    hasEnoughMana() {
+        return playerData.get(this.caster.id).mana - this.manaCost >= 0;
     }
 }

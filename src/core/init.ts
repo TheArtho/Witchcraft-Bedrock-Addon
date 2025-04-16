@@ -1,6 +1,6 @@
 import { system, world } from "@minecraft/server";
-import { cleanupLumosEntities } from "./modules/lumosCleaner";
-import {LoadPlayerData} from "./save/saveData";
+import { cleanupLumosEntities } from "../modules/lumosCleaner";
+import {LoadPlayerData} from "../save/saveData";
 
 let hasInit = false;
 

@@ -11,19 +11,30 @@ export class LumosSpell extends Spell implements PersistentSpell {
     interval: any;
     previousPos: Vector3 | null = null;
     isActive: Boolean = false;
+    manaCost : number = 1;
 
     constructor(caster: Player) {
         super(SpellIds.Lumos, "Lumos", "Éclaire autour de l'utilisateur.", MinecraftTextColor.Gold, caster);
     }
 
     cast(): void {
-        if (!this.isActive) {
-            this.caster.sendMessage("§eLumos!");
-            this.caster.playSound("random.orb", { pitch: 1, volume: 0.5 });
-            this.start();
+        try {
+            if (!this.hasEnoughMana()) {
+                this.caster.sendMessage("Not enough mana to cast this spell.")
+                return;
+            }
+
+            if (!this.isActive) {
+                this.caster.sendMessage("§eLumos!");
+                this.caster.playSound("random.orb", { pitch: 1, volume: 0.5 });
+                this.start();
+            }
+            else {
+                this.stop()
+            }
         }
-        else {
-            this.stop()
+        catch (e) {
+            // Skip
         }
     }
 
@@ -67,7 +78,11 @@ export class LumosSpell extends Spell implements PersistentSpell {
             }
 
             // Decrease the mana
-            playerData.get(this.caster.id)?.decreaseMana(0.25);
+            playerData.get(this.caster.id)?.decreaseMana(this.manaCost);
+
+            if (!this.hasEnoughMana()) {
+                this.stop()
+            }
         }, 5);
     }
 
@@ -159,5 +174,9 @@ export class LumosSpell extends Spell implements PersistentSpell {
 
     private registerLightPosition(pos: Vector3) {
         this.entity?.teleport(pos);
+    }
+
+    private hasEnoughMana() : Boolean {
+        return playerData.get(this.caster.id)!.mana! - this.manaCost >= 0;
     }
 }
