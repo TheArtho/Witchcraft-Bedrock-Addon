@@ -1,28 +1,13 @@
 {
+  "namespace": "hud",
+
+  //---------------------------------------------------------------------------
+  // Witchcraft Hud
+  //---------------------------------------------------------------------------
+
   "hud_elements_panel": {
     "type": "panel",
     "controls": [
-      {
-        "hud_mana_data_control": {
-          "type": "panel",
-          "size": [0, 0],
-          "bindings": [
-            {
-              "binding_name": "#hud_title_text_string"
-            },
-            {
-              "binding_name": "#hud_title_text_string",
-              "binding_name_override": "#preserved_mana_text",
-              "binding_condition": "visibility_changed"
-            },
-            {
-              "binding_type": "view",
-              "source_property_name": "(not (#hud_title_text_string = #preserved_mana_text) and not ((#hud_title_text_string - update_mana:) = #hud_title_text_string))",
-              "target_property_name": "#visible"
-            }
-          ]
-        }
-      },
       {
         "hud_mana_background": {
           "type": "image",
@@ -35,7 +20,10 @@
       },
       {
         "hud_mana_fill": {
-          "$update_string": "mana_ui_clip_ratio:",   // title must include this string to update the element
+          // title must include this string to update the element
+          "$update_string": "ui_mana_clip_ratio:",
+          // constant for text to float conversion
+          "$float_conversion": 100.0,
           "type": "image",
           "texture": "textures/ui/mana_bar_fill",
           "anchor_from": "bottom_left",
@@ -44,40 +32,20 @@
           "clip_ratio": "#clip_ratio",
           "size": [98, 8],
           "offset": [11, -11],
-          "bindings": [
-            {
-              "binding_name": "#mana_ui_clip_ratio",
-              "binding_type": "collection",
-              "binding_collection_name": "scoreboard_scores"
-            },
-            {
-              "binding_type": "view",
-              "source_property_name": "(#mana_ui_clip_ratio * 1) / 100",   // convert score from string to number
-              "target_property_name": "#clip_ratio"
-            }
-          ]
-        }
-      },
-      {
-        "hud_mana_text": {
-          "$update_string": "mana_ui_text:",   // title must include this string to update the element
-          "type": "label",
-          "text": "#text",
-          "anchor_from": "bottom_left",
-          "anchor_to": "bottom_left",
-          "offset": [10, -20],
           "controls": [
             {
-              "data_control": {
+              "hud_mana_fill_data_control": {
                 "type": "panel",
                 "size": [ 0, 0 ],
                 "bindings": [
                   {
-                    "binding_name": "#hud_title_text_string"      // reads in the current title string
+                    // reads in the current title string
+                    "binding_name": "#hud_title_text_string"
                   },
                   {
                     "binding_name": "#hud_title_text_string",
-                    "binding_name_override": "#preserved_text",   // updates #preserved_text when visibility of this element changes
+                    // updates #preserved_text when visibility of this element changes
+                    "binding_name_override": "#preserved_text",
                     "binding_condition": "visibility_changed"
                   },
                   // element becomes visible then immediately turns invisible when a title containing the update string is passed
@@ -93,13 +61,88 @@
           "bindings": [
             {
               "binding_type": "view",
-              "source_control_name": "data_control",   						// reads bindings from the "data_control" child element
-              //"resolve_sibling_scope": true,		 						// required if "data_control" is a sibling of the element that pulls the binding
-              "source_property_name": "(#preserved_text - $update_string)",   // remove string update text from the text to be displayed
+              // reads bindings from the "data_control" child element
+              "source_control_name": "hud_mana_fill_data_control",
+              // remove string update text from the text to be displayed and convert it into float
+              "source_property_name": "(#preserved_text - $update_string)",
+              "target_property_name": "#clip_ratio_string"
+            },
+            {
+              "binding_type": "view",
+              "source_property_name": "(#clip_ratio_string / $float_conversion)",
+              "target_property_name": "#clip_ratio"
+            }
+          ]
+        }
+      },
+      {
+        "hud_mana_text": {
+          // title must include this string to update the element
+          "$update_string": "ui_mana_text:",
+          "type": "label",
+          "text": "#text",
+          "anchor_from": "bottom_left",
+          "anchor_to": "bottom_left",
+          "offset": [10, -20],
+          "controls": [
+            {
+              "hud_mana_text_data_control": {
+                "type": "panel",
+                "size": [ 0, 0 ],
+                "bindings": [
+                  {
+                    // reads in the current title string
+                    "binding_name": "#hud_title_text_string"
+                  },
+                  {
+                    "binding_name": "#hud_title_text_string",
+                    // updates #preserved_text when visibility of this element changes
+                    "binding_name_override": "#preserved_text",
+                    "binding_condition": "visibility_changed"
+                  },
+                  // element becomes visible then immediately turns invisible when a title containing the update string is passed
+                  {
+                    "binding_type": "view",
+                    "source_property_name": "(not (#hud_title_text_string = #preserved_text) and not ((#hud_title_text_string - $update_string) = #hud_title_text_string))",
+                    "target_property_name": "#visible"
+                  }
+                ]
+              }
+            }
+          ],
+          "bindings": [
+            {
+              "binding_type": "view",
+              // reads bindings from the "data_control" child element
+              "source_control_name": "hud_mana_text_data_control",
+              // remove string update text from the text to be displayed
+              "source_property_name": "(#preserved_text - $update_string)",
               "target_property_name": "#text"
             }
           ]
         }
+      }
+    ]
+  },
+
+  //---------------------------------------------------------------------------
+  // Vanilla Hud Screen Override
+  //---------------------------------------------------------------------------
+
+  // Override title component to only show when "ui_title:" is set as a title prefix
+  "hud_title_text/title_frame/title": {
+    "$update_string": "ui_title:",
+    "modifications": [
+      {
+        "array_name": "bindings",
+        "operation": "insert_back",
+        "value": [
+          {
+            "binding_type": "view",
+            "source_property_name": "(not ((#text - $update_string) = #text))",
+            "target_property_name": "#visible"
+          }
+        ]
       }
     ]
   },

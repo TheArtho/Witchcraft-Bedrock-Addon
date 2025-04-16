@@ -1,5 +1,6 @@
 import {SpellIds} from "../spells/Spell";
-import {GameMode, Player, system, world} from "@minecraft/server";
+import {GameMode, Player, RawMessage, system, world} from "@minecraft/server";
+import {MathUtils} from "../utils/MathUtils";
 
 export const playerData = new Map<string, PlayerData>();
 
@@ -68,15 +69,15 @@ export class PlayerData {
         const player = this.getPlayer();
         if (!player) return;
 
-        const mana = Math.ceil(this.mana);
-        const maxMana = Math.ceil(this.maxMana);
-        const manaRatio = Math.ceil((this.mana / this.maxMana) * 100); // nombre entier
+        const mana = Math.ceil(this.mana);  // Integer
+        const maxMana = Math.ceil(this.maxMana);    // Integer
+        const manaClipRatio = (MathUtils.clamp(Math.ceil((1 - (this.mana / this.maxMana)) * 100),
+            0, 100));  // Integer [0 - 100]
         const manaText = `Mana: ${mana}/${maxMana}`;
 
-        player.onScreenDisplay.setTitle(`mana_ui_text:${manaText}`);
-        const obj = world.scoreboard.getObjective("mana_ui_clip_ratio") ??
-            world.scoreboard.addObjective("mana_ui_clip_ratio", "mana_ui_clip_ratio");
-        obj.setScore(player, manaRatio)
+        const titles = [`ui_mana_text:${manaText}`, `ui_mana_clip_ratio:${manaClipRatio}`]
+
+        this.setTitle(player, titles);
     }
 
     setSelectedSpell(index : number) {
@@ -92,5 +93,19 @@ export class PlayerData {
 
     private getPlayer() {
         return world.getPlayers().find(p => p.id == this.playerId)
+    }
+
+    private setTitle(player : Player, titles : string[]) {
+        let index : number = 0;
+
+        const interval = system.runInterval(() => {
+            // player.dimension.runCommand(`title @a times 0 0 0`)
+            player.dimension.runCommand(`title @a title ${titles[index]}`)
+            index++;
+
+            if (index >= titles.length) {
+                system.clearRun(interval);
+            }
+        });
     }
 }
