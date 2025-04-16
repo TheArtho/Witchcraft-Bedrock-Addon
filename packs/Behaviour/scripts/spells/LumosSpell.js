@@ -1,6 +1,7 @@
 import { Spell, SpellIds } from "./Spell";
 import { system } from "@minecraft/server";
 import { MinecraftTextColor } from "../utils/MinecraftTextColor";
+import { playerData } from "../player/PlayerData";
 export class LumosSpell extends Spell {
     constructor(caster) {
         super(SpellIds.Lumos, "Lumos", "Éclaire autour de l'utilisateur.", MinecraftTextColor.Gold, caster);
@@ -52,7 +53,9 @@ export class LumosSpell extends Spell {
                 this.clearLightBlock(this.previousPos, this.caster.dimension);
                 this.previousPos = null;
             }
-        });
+            // Decrease the mana
+            playerData.get(this.caster.id)?.decreaseMana(0.25);
+        }, 5);
     }
     stop() {
         if (!this.isActive)

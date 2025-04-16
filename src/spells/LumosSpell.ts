@@ -3,6 +3,7 @@ import {Dimension, Entity, Player, PlayerLeaveBeforeEvent, system, Vector3, worl
 import { MinecraftTextColor } from "../utils/MinecraftTextColor";
 import {activeSpells} from "../core/activeSpellManager";
 import {PersistentSpell} from "./PersistentSpell";
+import {playerData} from "../player/PlayerData";
 
 export class LumosSpell extends Spell implements PersistentSpell {
 
@@ -64,7 +65,10 @@ export class LumosSpell extends Spell implements PersistentSpell {
                 this.clearLightBlock(this.previousPos, this.caster.dimension);
                 this.previousPos = null;
             }
-        });
+
+            // Decrease the mana
+            playerData.get(this.caster.id)?.decreaseMana(0.25);
+        }, 5);
     }
 
     stop(): void {

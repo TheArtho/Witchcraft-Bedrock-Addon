@@ -7,11 +7,11 @@ export class PlayerDataManager {
     static load(player: Player): PlayerData {
         const raw = player.getDynamicProperty(this.DATA_KEY);
         try {
-            return new PlayerData(JSON.parse(raw as string));
+            return new PlayerData(player.id, JSON.parse(raw as string));
         } catch {
             console.warn(`[Witchcraft] Failed to parse player data for ${player.name}`);
         }
-        return new PlayerData();
+        return new PlayerData(player.id);
     }
 
     static save(player: Player, data: PlayerData) {
@@ -24,9 +24,9 @@ export class PlayerDataManager {
 
     static reset(player: Player) {
         try {
-            player.setDynamicProperty(this.DATA_KEY, JSON.stringify(new PlayerData()));
+            player.setDynamicProperty(this.DATA_KEY, JSON.stringify(new PlayerData(player.id)));
         } catch (e) {
-            console.warn(`[Witchcraft] Failed to save player data for ${player.name}: ${e}`);
+            console.warn(`[Witchcraft] Failed to reset player data for ${player.name}: ${e}`);
         }
     }
 }
