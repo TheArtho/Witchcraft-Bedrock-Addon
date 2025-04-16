@@ -1,5 +1,5 @@
 import { Spell, SpellIds } from "./Spell";
-import { system } from "@minecraft/server";
+import { GameMode, system } from "@minecraft/server";
 import { MinecraftTextColor } from "../utils/MinecraftTextColor";
 import { playerData } from "../player/PlayerData";
 export class LumosSpell extends Spell {
@@ -64,11 +64,11 @@ export class LumosSpell extends Spell {
                 this.previousPos = null;
             }
             // Decrease the mana
-            playerData.get(this.caster.id)?.decreaseMana(this.manaCost);
+            playerData.get(this.caster.id).decreaseMana(this.manaCost);
             if (!this.hasEnoughMana()) {
                 this.stop();
             }
-        }, 5);
+        }, 2);
     }
     stop() {
         if (!this.isActive)
@@ -148,6 +148,6 @@ export class LumosSpell extends Spell {
         this.entity?.teleport(pos);
     }
     hasEnoughMana() {
-        return playerData.get(this.caster.id).mana - this.manaCost >= 0;
+        return this.caster.getGameMode() == GameMode.creative || playerData.get(this.caster.id).mana - this.manaCost >= 0;
     }
 }

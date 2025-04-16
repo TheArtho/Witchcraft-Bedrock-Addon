@@ -1,6 +1,4 @@
 pack.name=Witchcraft RP
 pack.description=Resource pack for the Witchcraft addon.
 item.witchcraft:wizard_wand=Wizard Wand
-tile.witchcraft:lumos_light.name=Lumos Light
-tile.witchcraft:lumos_light.name=Lumos Light
-tile.witchcraft:lumos_light.name=Lumos Light
+item.witchcraft:potion_bottle_mana=Mana Potion

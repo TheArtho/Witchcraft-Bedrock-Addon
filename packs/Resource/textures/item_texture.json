@@ -4,6 +4,9 @@
     "texture_data": {
       "witchcraft:wizard_wand": {
         "textures": "textures/items/wizard_wand"
+      },
+      "witchcraft:potion_bottle_mana": {
+        "textures": "textures/items/potion_bottle_mana"
       }
     }
   }

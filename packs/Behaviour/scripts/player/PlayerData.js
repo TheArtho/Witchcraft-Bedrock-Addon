@@ -77,7 +77,7 @@ export class PlayerData {
         titles.forEach((title, i) => {
             system.runTimeout(() => {
                 player.runCommand(`title @s title ${title}`);
-            }, i); // 5 ticks entre chaque titre
+            }, i); // 1 tick between each change
         });
     }
 }

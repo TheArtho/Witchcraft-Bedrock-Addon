@@ -1,3 +1,4 @@
 pack.name=Witchcraft
 pack.description=An addon about witchcraft and magic.
 item.witchcraft:wizard_wand=Wizard Wand
+item.witchcraft:potion_bottle_mana=Mana Potion

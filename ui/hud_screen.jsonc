@@ -83,7 +83,7 @@
           "text": "#text",
           "anchor_from": "bottom_left",
           "anchor_to": "bottom_left",
-          "offset": [10, -20],
+          "offset": [15, -20],
           "controls": [
             {
               "hud_mana_text_data_control": {
@@ -121,6 +121,23 @@
             }
           ]
         }
+      }
+      /*
+      {
+        "selected_spell_text": {
+          "type": "label",
+          "text": "Selected spell: §eLumos",
+          "anchor_from": "bottom_left",
+          "anchor_to": "bottom_left",
+          "offset": [15, -30]
+        }
+      }
+      */
+    ],
+    "bindings": [
+      {
+        "binding_name": "#show_survival_ui",
+        "binding_name_override": "#visible"
       }
     ]
   },

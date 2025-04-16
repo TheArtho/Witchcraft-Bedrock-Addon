@@ -1,7 +1,6 @@
-import { Spell, SpellIds } from "./Spell";
-import {Dimension, Entity, Player, PlayerLeaveBeforeEvent, system, Vector3, world} from "@minecraft/server";
-import { MinecraftTextColor } from "../utils/MinecraftTextColor";
-import {activeSpells} from "../core/activeSpellManager";
+import {Spell, SpellIds} from "./Spell";
+import {Dimension, Entity, GameMode, Player, system, Vector3} from "@minecraft/server";
+import {MinecraftTextColor} from "../utils/MinecraftTextColor";
 import {PersistentSpell} from "./PersistentSpell";
 import {playerData} from "../player/PlayerData";
 
@@ -78,12 +77,12 @@ export class LumosSpell extends Spell implements PersistentSpell {
             }
 
             // Decrease the mana
-            playerData.get(this.caster.id)?.decreaseMana(this.manaCost);
+            playerData.get(this.caster.id)!.decreaseMana(this.manaCost);
 
             if (!this.hasEnoughMana()) {
                 this.stop()
             }
-        }, 5);
+        }, 2);
     }
 
     stop(): void {
@@ -177,6 +176,6 @@ export class LumosSpell extends Spell implements PersistentSpell {
     }
 
     private hasEnoughMana() : Boolean {
-        return playerData.get(this.caster.id)!.mana! - this.manaCost >= 0;
+        return this.caster.getGameMode() == GameMode.creative || playerData.get(this.caster.id)!.mana! - this.manaCost >= 0;
     }
 }
