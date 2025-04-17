@@ -3,6 +3,7 @@ import {Dimension, Entity, GameMode, Player, system, Vector3} from "@minecraft/s
 import {MinecraftTextColor} from "../utils/MinecraftTextColor";
 import {PersistentSpell} from "./PersistentSpell";
 import {playerData} from "../player/PlayerData";
+import {activeSpells} from "../core/activeSpellManager";
 
 export class LumosSpell extends Spell implements PersistentSpell {
 
@@ -10,7 +11,6 @@ export class LumosSpell extends Spell implements PersistentSpell {
     interval: any;
     previousPos: Vector3 | null = null;
     isActive: Boolean = false;
-    manaCost : number = 1;
 
     constructor(caster: Player) {
         super(SpellIds.Lumos, "Lumos", "Éclaire autour de l'utilisateur.", MinecraftTextColor.Gold, caster);
@@ -20,6 +20,7 @@ export class LumosSpell extends Spell implements PersistentSpell {
         try {
             if (!this.hasEnoughMana()) {
                 this.caster.sendMessage("Not enough mana to cast this spell.")
+                activeSpells.delete(this.caster.id);
                 return;
             }
 
@@ -77,12 +78,12 @@ export class LumosSpell extends Spell implements PersistentSpell {
             }
 
             // Decrease the mana
-            playerData.get(this.caster.id)!.decreaseMana(this.manaCost);
+            playerData.get(this.caster.id)!.decreaseMana(this.getManaCost());
 
             if (!this.hasEnoughMana()) {
                 this.stop()
             }
-        }, 2);
+        }, 5);
     }
 
     stop(): void {
@@ -102,6 +103,8 @@ export class LumosSpell extends Spell implements PersistentSpell {
             this.clearLightBlock(this.previousPos, this.caster.dimension);
             this.previousPos = null;
         }
+
+        activeSpells.delete(this.caster.id);
     }
 
     private findLightPlacement(player: Player, previousPos : Vector3 | null): Vector3 | null {
@@ -175,7 +178,7 @@ export class LumosSpell extends Spell implements PersistentSpell {
         this.entity?.teleport(pos);
     }
 
-    private hasEnoughMana() : Boolean {
-        return this.caster.getGameMode() == GameMode.creative || playerData.get(this.caster.id)!.mana! - this.manaCost >= 0;
+    getManaCost(): number {
+        return 1;
     }
 }

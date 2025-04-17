@@ -10,4 +10,8 @@ export class FailSpell extends Spell {
     cast(): void {
         this.caster.sendMessage("Whoops...");
     }
+
+    getManaCost(): number {
+        return 0;
+    }
 }

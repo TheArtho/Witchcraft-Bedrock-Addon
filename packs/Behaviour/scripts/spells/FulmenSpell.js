@@ -15,4 +15,7 @@ export class FulmenSpell extends ProjectileSpell {
             // Skip
         }
     }
+    getManaCost() {
+        return 50;
+    }
 }

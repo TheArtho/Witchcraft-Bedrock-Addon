@@ -1,4 +1,6 @@
+import { GameMode } from "@minecraft/server";
 import { activeSpells } from "../core/activeSpellManager";
+import { playerData } from "../player/PlayerData";
 export var SpellIds;
 (function (SpellIds) {
     SpellIds[SpellIds["Fail"] = -1] = "Fail";
@@ -17,5 +19,8 @@ export class Spell {
     }
     setActiveSpell() {
         activeSpells.set(this.caster.id, this);
+    }
+    hasEnoughMana() {
+        return this.caster.getGameMode() == GameMode.creative || playerData.get(this.caster.id).mana - this.getManaCost() >= 0;
     }
 }

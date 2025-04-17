@@ -1,7 +1,7 @@
 import "./save/saveData";
 import "./items/index";
 import "./events/customEventHandler";
-import {initMod} from "./core/init";
+import {init} from "./core/init";
 import "./core/initCommands";
 import {GameMode, world} from "@minecraft/server";
 import {playerData} from "./player/PlayerData";
@@ -12,4 +12,4 @@ world.beforeEvents.playerGameModeChange.subscribe((event) => {
     }
 })
 
-initMod();
+init();

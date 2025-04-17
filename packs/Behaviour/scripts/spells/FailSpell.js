@@ -7,4 +7,7 @@ export class FailSpell extends Spell {
     cast() {
         this.caster.sendMessage("Whoops...");
     }
+    getManaCost() {
+        return 0;
+    }
 }

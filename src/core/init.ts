@@ -10,7 +10,7 @@ world.afterEvents.playerJoin.subscribe(() => {
     cleanupLumosEntities();
 });
 
-export function initMod() {
+export function init() {
     if (hasInit) return;
     hasInit = true;
 

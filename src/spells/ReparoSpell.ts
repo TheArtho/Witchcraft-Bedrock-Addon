@@ -3,6 +3,7 @@ import {Spell, SpellIds} from "./Spell";
 import {MinecraftTextColor} from "../utils/MinecraftTextColor";
 import {colorText} from "../utils/colorText";
 import {AnvilStates} from "@minecraft/vanilla-data/lib/mojang-block";
+import {playerData} from "../player/PlayerData";
 
 export class ReparoSpell extends Spell {
     static maxDistance = 10;
@@ -17,6 +18,11 @@ export class ReparoSpell extends Spell {
     }
 
     cast(): void {
+        if (!this.hasEnoughMana()) {
+            this.caster.sendMessage("Not enough mana to cast this spell.")
+            return;
+        }
+
         const direction = this.caster.getViewDirection();
         const origin = this.caster.getHeadLocation();
 
@@ -29,6 +35,7 @@ export class ReparoSpell extends Spell {
             );
 
             ReparoSpell.tryRepairEntity(this.caster, closest.entity);
+            playerData.get(this.caster.id)?.decreaseMana(this.getManaCost());
             return
         }
 
@@ -37,6 +44,7 @@ export class ReparoSpell extends Spell {
 
         if (hitBlock) {
             ReparoSpell.tryRepair(this.caster, hitBlock.block);
+            playerData.get(this.caster.id)?.decreaseMana(this.getManaCost());
         }
     }
 
@@ -88,5 +96,9 @@ export class ReparoSpell extends Spell {
 
     static getNonInteractableBlocks(): string[] {
         return Array.from(this.repairs.keys());
+    }
+
+    getManaCost(): number {
+        return 75;
     }
 }

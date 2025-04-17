@@ -1,19 +1,20 @@
 import { Spell, SpellIds } from "./Spell";
-import { GameMode, system } from "@minecraft/server";
+import { system } from "@minecraft/server";
 import { MinecraftTextColor } from "../utils/MinecraftTextColor";
 import { playerData } from "../player/PlayerData";
+import { activeSpells } from "../core/activeSpellManager";
 export class LumosSpell extends Spell {
     constructor(caster) {
         super(SpellIds.Lumos, "Lumos", "Éclaire autour de l'utilisateur.", MinecraftTextColor.Gold, caster);
         this.entity = null;
         this.previousPos = null;
         this.isActive = false;
-        this.manaCost = 1;
     }
     cast() {
         try {
             if (!this.hasEnoughMana()) {
                 this.caster.sendMessage("Not enough mana to cast this spell.");
+                activeSpells.delete(this.caster.id);
                 return;
             }
             if (!this.isActive) {
@@ -64,11 +65,11 @@ export class LumosSpell extends Spell {
                 this.previousPos = null;
             }
             // Decrease the mana
-            playerData.get(this.caster.id).decreaseMana(this.manaCost);
+            playerData.get(this.caster.id).decreaseMana(this.getManaCost());
             if (!this.hasEnoughMana()) {
                 this.stop();
             }
-        }, 2);
+        }, 5);
     }
     stop() {
         if (!this.isActive)
@@ -85,6 +86,7 @@ export class LumosSpell extends Spell {
             this.clearLightBlock(this.previousPos, this.caster.dimension);
             this.previousPos = null;
         }
+        activeSpells.delete(this.caster.id);
     }
     findLightPlacement(player, previousPos) {
         const dim = player.dimension;
@@ -147,7 +149,7 @@ export class LumosSpell extends Spell {
     registerLightPosition(pos) {
         this.entity?.teleport(pos);
     }
-    hasEnoughMana() {
-        return this.caster.getGameMode() == GameMode.creative || playerData.get(this.caster.id).mana - this.manaCost >= 0;
+    getManaCost() {
+        return 1;
     }
 }

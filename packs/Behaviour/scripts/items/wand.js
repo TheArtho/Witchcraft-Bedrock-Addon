@@ -1,10 +1,22 @@
-import { EntityComponentTypes, EquipmentSlot, system, world } from "@minecraft/server";
-import { cycleSpell, getSelectedSpell } from "../interface/spellMenu";
+import { Direction, EntityComponentTypes, EquipmentSlot, system, world } from "@minecraft/server";
+import { getSelectedSpell } from "../interface/spellMenu";
 import { SpellIds } from "../spells/Spell";
 import { getSpellFromId } from "../spells/spellRegistry";
 import { customEvents } from "../events/customEventHandler";
 import { activeSpells } from "../core/activeSpellManager";
 import { ReparoSpell } from "../spells/ReparoSpell";
+import { GestureTracker } from "../player/GestureTracker";
+import { colorText } from "../utils/colorText";
+import { MinecraftTextColor } from "../utils/MinecraftTextColor";
+// Helper to transform a direction array into a sequence of key string
+function sequenceKey(sequence) {
+    return sequence.join(",");
+}
+const spellDirections = new Map([
+    [sequenceKey([Direction.Up, Direction.Down]), SpellIds.Leviosa],
+    [sequenceKey([Direction.Down, Direction.East]), SpellIds.Lumos]
+]);
+const playerDirections = new Map();
 function isPersistentSpell(spell) {
     return typeof spell?.stop === "function";
 }
@@ -23,6 +35,15 @@ function updateSpell(player) {
     spell.setActiveSpell();
     system.run(() => player.runCommand(`titleraw @s actionbar {"rawtext":[{"text":"Sort sélectionné : ${spell.color}${spell.name}"}]}`));
 }
+function updateSpellMovement(player, selectedSpell) {
+    const previousSpell = activeSpells.get(player.id);
+    if (previousSpell && isPersistentSpell(previousSpell)) {
+        previousSpell?.stop();
+    }
+    const spell = getSpellFromId(selectedSpell, player);
+    spell.setActiveSpell();
+    system.run(() => player.runCommand(`titleraw @s actionbar {"rawtext":[{"text":"Sort sélectionné : ${spell.color}${spell.name}"}]}`));
+}
 function castSpell(player) {
     let spell = activeSpells.get(player.id);
     if (!spell) {
@@ -32,6 +53,78 @@ function castSpell(player) {
     }
     spell?.cast();
 }
+function getDirectionSound(direction) {
+    switch (direction) {
+        case Direction.Up:
+            return 1;
+        case Direction.Down:
+            return 0.25;
+        case Direction.East:
+            return 0.45;
+        case Direction.West:
+            return 0.75;
+        default:
+            return 1;
+    }
+}
+function registerDirection(direction, player) {
+    const id = player.id;
+    const history = playerDirections.get(id) ?? [];
+    // Verify that the direction is different from the last one registered
+    if (history.length === 0 || history[history.length - 1] !== direction) {
+        // Push back the direction
+        history.push(direction);
+        // If more than 2, delete the first one
+        if (history.length > 2) {
+            history.shift();
+        }
+        // Update the map
+        playerDirections.set(id, history);
+    }
+    // Feedback the player
+    player.sendMessage(`${Direction[direction]}`);
+    const sequence = sequenceKey(playerDirections.get(id));
+    if (spellDirections.has(sequence)) {
+        const spellId = spellDirections.get(sequence);
+        updateSpellMovement(player, spellId);
+        const spell = activeSpells.get(player.id);
+        if (spell && isPersistentSpell(spell)) {
+            spell.cast();
+        }
+        else {
+            player.playSound("note.harp", { volume: 0.5 });
+        }
+        stopTracking(player);
+    }
+    else {
+        player.playSound("random.orb", { volume: 0.25, pitch: getDirectionSound(direction) });
+    }
+}
+function startTracking(player, callback) {
+    GestureTracker.startTracking(player, callback);
+    player.sendMessage(colorText("Détection mouvement activée", MinecraftTextColor.Green));
+}
+function stopTracking(player) {
+    GestureTracker.stopTracking(player);
+    player.sendMessage(colorText("Détection mouvement désactivée", MinecraftTextColor.Red));
+}
+// Slot change event for Wizard Wand
+customEvents.afterEvents.playerSlotChange.subscribe(({ player }) => {
+    if (!isHoldingWand(player)) {
+        const spell = activeSpells.get(player.id);
+        if (spell) {
+            if (isPersistentSpell(spell)) {
+                spell.stop();
+            }
+            activeSpells.delete(player.id);
+        }
+        if (GestureTracker.isTracking(player)) {
+            stopTracking(player);
+        }
+    }
+});
+// Old version of the wand
+/*
 customEvents.afterEvents.playerSlotChange.subscribe(({ player }) => {
     if (isHoldingWand(player)) {
         updateSpell(player);
@@ -45,7 +138,8 @@ customEvents.afterEvents.playerSlotChange.subscribe(({ player }) => {
             activeSpells.set(player.id, null);
         }
     }
-});
+})
+*/
 world.afterEvents.playerJoin.subscribe(({ playerId }) => {
     // Delay by 1 tick to ensure the player object is available
     system.runTimeout(() => {
@@ -61,6 +155,38 @@ world.afterEvents.itemUse.subscribe((event) => {
     const item = event.itemStack;
     if (item?.typeId !== "witchcraft:wizard_wand")
         return;
+    if (!GestureTracker.isTracking(player)) {
+        if (activeSpells.has(player.id)) {
+            const spell = activeSpells.get(player.id);
+            if (spell) {
+                // If there is an active persistent spell then disable it
+                if (isPersistentSpell(spell)) {
+                    spell.stop();
+                }
+                // Otherwise cast the spell
+                else {
+                    spell.cast();
+                }
+            }
+            activeSpells.delete(player.id);
+        }
+        else {
+            playerDirections.delete(player.id);
+            startTracking(player, registerDirection);
+        }
+    }
+    else {
+        stopTracking(player);
+    }
+});
+// Old version of wizard wand use (with spell cycle menu)
+/*
+world.afterEvents.itemUse.subscribe((event) => {
+    const player = event.source;
+    const item = event.itemStack;
+
+    if (item?.typeId !== "witchcraft:wizard_wand") return;
+
     if (player.isSneaking) {
         cycleSpell(player.id);
         player.playSound("random.orb", {
@@ -70,8 +196,10 @@ world.afterEvents.itemUse.subscribe((event) => {
         updateSpell(player);
         return;
     }
+
     castSpell(player);
 });
+*/
 world.beforeEvents.playerInteractWithBlock.subscribe((event) => {
     const player = event.player;
     // Cast spell for Reparo

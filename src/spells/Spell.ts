@@ -1,6 +1,7 @@
-import {Block, Entity, Player} from "@minecraft/server";
+import {Block, Entity, GameMode, Player} from "@minecraft/server";
 import {MinecraftTextColor} from "../utils/MinecraftTextColor";
 import {activeSpells} from "../core/activeSpellManager";
+import {playerData} from "../player/PlayerData";
 
 export enum SpellIds {
     Fail = -1,
@@ -32,6 +33,12 @@ export abstract class Spell {
     }
 
     abstract cast(): void;
+
+    abstract getManaCost() : number;
+
+    protected hasEnoughMana() : Boolean {
+        return this.caster.getGameMode() == GameMode.creative || playerData.get(this.caster.id)!.mana! - this.getManaCost() >= 0;
+    }
 
     onEntityHit?(caster: Player, target: Entity): void;
     onBlockHit?(caster: Player, block : Block): void;

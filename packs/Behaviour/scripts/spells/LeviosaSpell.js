@@ -13,4 +13,7 @@ export class LeviosaSpell extends ProjectileSpell {
             // Skip
         }
     }
+    getManaCost() {
+        return 20;
+    }
 }

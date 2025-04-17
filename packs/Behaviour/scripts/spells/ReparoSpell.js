@@ -1,11 +1,16 @@
 import { BlockPermutation } from "@minecraft/server";
 import { Spell, SpellIds } from "./Spell";
 import { MinecraftTextColor } from "../utils/MinecraftTextColor";
+import { playerData } from "../player/PlayerData";
 export class ReparoSpell extends Spell {
     constructor(caster) {
         super(SpellIds.Reparo, "Reparo", "Répare les choses endommagées.", MinecraftTextColor.Green, caster);
     }
     cast() {
+        if (!this.hasEnoughMana()) {
+            this.caster.sendMessage("Not enough mana to cast this spell.");
+            return;
+        }
         const direction = this.caster.getViewDirection();
         const origin = this.caster.getHeadLocation();
         const hitEntity = this.caster.dimension.getEntitiesFromRay(origin, direction, { maxDistance: ReparoSpell.maxDistance })
@@ -13,12 +18,14 @@ export class ReparoSpell extends Spell {
         if (hitEntity.length > 0) {
             const closest = hitEntity.reduce((prev, current) => current.distance < prev.distance ? current : prev);
             ReparoSpell.tryRepairEntity(this.caster, closest.entity);
+            playerData.get(this.caster.id)?.decreaseMana(this.getManaCost());
             return;
         }
         // Raycast de 4 blocs devant le joueur
         const hitBlock = this.caster.dimension.getBlockFromRay(origin, direction, { maxDistance: ReparoSpell.maxDistance });
         if (hitBlock) {
             ReparoSpell.tryRepair(this.caster, hitBlock.block);
+            playerData.get(this.caster.id)?.decreaseMana(this.getManaCost());
         }
     }
     static tryRepairEntity(caster, entity) {
@@ -57,6 +64,9 @@ export class ReparoSpell extends Spell {
     }
     static getNonInteractableBlocks() {
         return Array.from(this.repairs.keys());
+    }
+    getManaCost() {
+        return 75;
     }
 }
 ReparoSpell.maxDistance = 10;
