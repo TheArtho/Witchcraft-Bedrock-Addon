@@ -5,6 +5,7 @@ import {LumosSpell} from "./LumosSpell";
 import {FulmenSpell} from "./FulmenSpell";
 import {Player} from "@minecraft/server";
 import {ReparoSpell} from "./ReparoSpell";
+import {ExpelliarmusSpell} from "./ExpelliarmusSpell";
 
 export function getSpellFromId(id: SpellIds, player : Player): Spell {
     switch (id) {
@@ -12,6 +13,7 @@ export function getSpellFromId(id: SpellIds, player : Player): Spell {
         case SpellIds.Lumos: return new LumosSpell(player);
         case SpellIds.Fulmen: return new FulmenSpell(player);
         case SpellIds.Reparo: return new ReparoSpell(player);
+        case SpellIds.Expelliarmus: return new ExpelliarmusSpell(player);
         default: return new FailSpell(player);
     }
 }

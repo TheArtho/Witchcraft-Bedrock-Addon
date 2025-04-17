@@ -16,8 +16,10 @@ function sequenceKey(sequence: Direction[]): string {
 }
 
 const spellDirections = new Map<string, SpellIds>([
-    [sequenceKey([Direction.Up, Direction.Down]), SpellIds.Leviosa],
-    [sequenceKey([Direction.Down, Direction.East]), SpellIds.Lumos]
+    [sequenceKey([Direction.Down, Direction.Up]), SpellIds.Leviosa],
+    [sequenceKey([Direction.Down, Direction.East]), SpellIds.Lumos],
+    [sequenceKey([Direction.Down, Direction.West]), SpellIds.Reparo],
+    [sequenceKey([Direction.Up, Direction.Down]), SpellIds.Expelliarmus],
 ]);
 
 const playerDirections = new Map<string, Direction[]>();
@@ -100,10 +102,17 @@ function registerDirection(direction: Direction, player: Player) {
         playerDirections.set(id, history);
     }
 
-    // Feedback the player
-    player.sendMessage(`${Direction[direction]}`);
+    const sequence = sequenceKey(history);
 
-    const sequence = sequenceKey(playerDirections.get(id)!);
+    let actionText = sequence;
+    actionText = actionText.replace("Up", "↑");
+    actionText = actionText.replace("Down", "↓");
+    actionText = actionText.replace("East", "→");
+    actionText = actionText.replace("West", "←");
+    actionText = actionText.replace(',', ' ');
+
+    // Feedback the player
+    player.onScreenDisplay.setActionBar(`${actionText}`);
 
     if (spellDirections.has(sequence)) {
         const spellId = spellDirections.get(sequence);
@@ -124,12 +133,12 @@ function registerDirection(direction: Direction, player: Player) {
 
 function startTracking(player : Player, callback: (dir: Direction, player: Player) => void) {
     GestureTracker.startTracking(player, callback);
-    player.sendMessage(colorText("Détection mouvement activée", MinecraftTextColor.Green));
+    // player.sendMessage(colorText("Détection mouvement activée", MinecraftTextColor.Green));
 }
 
 function stopTracking(player : Player) {
     GestureTracker.stopTracking(player);
-    player.sendMessage(colorText("Détection mouvement désactivée", MinecraftTextColor.Red));
+    // player.sendMessage(colorText("Détection mouvement désactivée", MinecraftTextColor.Red));
 }
 
 // Slot change event for Wizard Wand
@@ -234,12 +243,16 @@ world.afterEvents.itemUse.subscribe((event) => {
 world.beforeEvents.playerInteractWithBlock.subscribe((event) => {
     const player = event.player;
 
-    // Cast spell for Reparo
-    if (isHoldingWand(player) &&
-        getSelectedSpell(player.id) == SpellIds.Reparo &&
-        ReparoSpell.getNonInteractableBlocks().includes(event.block.typeId))
-    {
-        system.run(() => castSpell(player));
-        event.cancel = true;
+    // Try cast spell for Reparo
+    if (isHoldingWand(player)) {
+        const spell = activeSpells.get(player.id);
+
+        if (spell?.id === SpellIds.Reparo &&
+            ReparoSpell.getNonInteractableBlocks().includes(event.block.typeId))
+        {
+            spell.cast();
+            activeSpells.delete(player.id);
+            event.cancel = true;
+        }
     }
 })

@@ -4,12 +4,14 @@ import { LeviosaSpell } from "./LeviosaSpell";
 import { LumosSpell } from "./LumosSpell";
 import { FulmenSpell } from "./FulmenSpell";
 import { ReparoSpell } from "./ReparoSpell";
+import { ExpelliarmusSpell } from "./ExpelliarmusSpell";
 export function getSpellFromId(id, player) {
     switch (id) {
         case SpellIds.Leviosa: return new LeviosaSpell(player);
         case SpellIds.Lumos: return new LumosSpell(player);
         case SpellIds.Fulmen: return new FulmenSpell(player);
         case SpellIds.Reparo: return new ReparoSpell(player);
+        case SpellIds.Expelliarmus: return new ExpelliarmusSpell(player);
         default: return new FailSpell(player);
     }
 }

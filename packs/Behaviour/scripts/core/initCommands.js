@@ -14,6 +14,6 @@ world.beforeEvents.chatSend.subscribe((event) => {
         catch (e) {
             event.sender.sendMessage(`Error with command !${strings[0]}. ${e}`);
         }
-        // event.cancel = true;
+        event.cancel = true;
     }
 });

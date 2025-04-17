@@ -6,15 +6,15 @@ import { customEvents } from "../events/customEventHandler";
 import { activeSpells } from "../core/activeSpellManager";
 import { ReparoSpell } from "../spells/ReparoSpell";
 import { GestureTracker } from "../player/GestureTracker";
-import { colorText } from "../utils/colorText";
-import { MinecraftTextColor } from "../utils/MinecraftTextColor";
 // Helper to transform a direction array into a sequence of key string
 function sequenceKey(sequence) {
     return sequence.join(",");
 }
 const spellDirections = new Map([
-    [sequenceKey([Direction.Up, Direction.Down]), SpellIds.Leviosa],
-    [sequenceKey([Direction.Down, Direction.East]), SpellIds.Lumos]
+    [sequenceKey([Direction.Down, Direction.Up]), SpellIds.Leviosa],
+    [sequenceKey([Direction.Down, Direction.East]), SpellIds.Lumos],
+    [sequenceKey([Direction.Down, Direction.West]), SpellIds.Reparo],
+    [sequenceKey([Direction.Up, Direction.Down]), SpellIds.Expelliarmus],
 ]);
 const playerDirections = new Map();
 function isPersistentSpell(spell) {
@@ -81,9 +81,15 @@ function registerDirection(direction, player) {
         // Update the map
         playerDirections.set(id, history);
     }
+    const sequence = sequenceKey(history);
+    let actionText = sequence;
+    actionText = actionText.replace("Up", "↑");
+    actionText = actionText.replace("Down", "↓");
+    actionText = actionText.replace("East", "→");
+    actionText = actionText.replace("West", "←");
+    actionText = actionText.replace(',', ' ');
     // Feedback the player
-    player.sendMessage(`${Direction[direction]}`);
-    const sequence = sequenceKey(playerDirections.get(id));
+    player.onScreenDisplay.setActionBar(`${actionText}`);
     if (spellDirections.has(sequence)) {
         const spellId = spellDirections.get(sequence);
         updateSpellMovement(player, spellId);
@@ -102,11 +108,11 @@ function registerDirection(direction, player) {
 }
 function startTracking(player, callback) {
     GestureTracker.startTracking(player, callback);
-    player.sendMessage(colorText("Détection mouvement activée", MinecraftTextColor.Green));
+    // player.sendMessage(colorText("Détection mouvement activée", MinecraftTextColor.Green));
 }
 function stopTracking(player) {
     GestureTracker.stopTracking(player);
-    player.sendMessage(colorText("Détection mouvement désactivée", MinecraftTextColor.Red));
+    // player.sendMessage(colorText("Détection mouvement désactivée", MinecraftTextColor.Red));
 }
 // Slot change event for Wizard Wand
 customEvents.afterEvents.playerSlotChange.subscribe(({ player }) => {
@@ -202,11 +208,14 @@ world.afterEvents.itemUse.subscribe((event) => {
 */
 world.beforeEvents.playerInteractWithBlock.subscribe((event) => {
     const player = event.player;
-    // Cast spell for Reparo
-    if (isHoldingWand(player) &&
-        getSelectedSpell(player.id) == SpellIds.Reparo &&
-        ReparoSpell.getNonInteractableBlocks().includes(event.block.typeId)) {
-        system.run(() => castSpell(player));
-        event.cancel = true;
+    // Try cast spell for Reparo
+    if (isHoldingWand(player)) {
+        const spell = activeSpells.get(player.id);
+        if (spell?.id === SpellIds.Reparo &&
+            ReparoSpell.getNonInteractableBlocks().includes(event.block.typeId)) {
+            spell.cast();
+            activeSpells.delete(player.id);
+            event.cancel = true;
+        }
     }
 });
