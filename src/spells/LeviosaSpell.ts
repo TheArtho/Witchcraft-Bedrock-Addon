@@ -1,7 +1,8 @@
-import {Entity, Player} from "@minecraft/server";
+import {EffectType, Entity, Player} from "@minecraft/server";
 import {SpellIds} from "./Spell";
 import {ProjectileSpell} from "./ProjectileSpell";
 import {MinecraftTextColor} from "../utils/MinecraftTextColor";
+import {secondsToTick} from "../utils/TimeTick";
 
 export class LeviosaSpell extends ProjectileSpell {
 
@@ -11,10 +12,14 @@ export class LeviosaSpell extends ProjectileSpell {
 
     onEntityHit(caster: Player, target: Entity) {
         try {
-            target.applyKnockback({x: 0, z: 0}, 1);
+            target.addEffect('minecraft:levitation', secondsToTick(5), {
+                showParticles: false,
+                amplifier: 1
+            });
         }
         catch (error) {
             // Skip
+            console.log(error);
         }
     }
 

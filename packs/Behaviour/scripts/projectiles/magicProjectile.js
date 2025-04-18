@@ -1,4 +1,5 @@
 import { system } from "@minecraft/server";
+import { MagicProjectileFlag } from "../spells/ProjectileSpell";
 import { spellIdToString } from "../spells/spellRegistry";
 const passThroughBlocks = [
     "minecraft:water",
@@ -25,7 +26,7 @@ const passThroughBlocks = [
     "minecraft:red_mushroom",
     "minecraft:brown_mushroom"
 ];
-export function spawnMagicProjectile(caster, spell) {
+export function spawnMagicProjectile(caster, spell, flags) {
     const direction = caster.getViewDirection();
     const origin = caster.getHeadLocation();
     const dimension = caster.dimension;
@@ -48,6 +49,12 @@ export function spawnMagicProjectile(caster, spell) {
     let age = 0;
     projectile.dimension.playSound("note.harp", projectile.location);
     projectile.dimension.spawnParticle(particleName, projectile.location);
+    let excludeEntityTypes = [];
+    if (flags) {
+        if (!flags.includes(MagicProjectileFlag.CanTouchItems)) {
+            excludeEntityTypes.push("item");
+        }
+    }
     const interval = system.runInterval(() => {
         let hit;
         if (!projectile.isValid) {
@@ -83,6 +90,7 @@ export function spawnMagicProjectile(caster, spell) {
                 location: nextPos,
                 maxDistance: 2,
                 excludeFamilies: ["projectile"],
+                excludeTypes: excludeEntityTypes
             }).find(e => e.id !== caster.id);
         }
         catch (e) {

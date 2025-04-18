@@ -9,6 +9,7 @@ export var SpellIds;
     SpellIds[SpellIds["Fulmen"] = 3] = "Fulmen";
     SpellIds[SpellIds["Reparo"] = 4] = "Reparo";
     SpellIds[SpellIds["Expelliarmus"] = 5] = "Expelliarmus";
+    SpellIds[SpellIds["Accio"] = 6] = "Accio";
 })(SpellIds || (SpellIds = {}));
 export class Spell {
     constructor(id, name, description, color, caster) {

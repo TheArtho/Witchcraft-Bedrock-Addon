@@ -9,7 +9,8 @@ export enum SpellIds {
     Lumos = 2,
     Fulmen = 3,
     Reparo = 4,
-    Expelliarmus= 5
+    Expelliarmus= 5,
+    Accio = 6,
 }
 
 export abstract class Spell {

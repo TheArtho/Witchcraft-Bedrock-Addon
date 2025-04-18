@@ -15,6 +15,7 @@ const spellDirections = new Map([
     [sequenceKey([Direction.Down, Direction.East]), SpellIds.Lumos],
     [sequenceKey([Direction.Down, Direction.West]), SpellIds.Reparo],
     [sequenceKey([Direction.Up, Direction.Down]), SpellIds.Expelliarmus],
+    [sequenceKey([Direction.Up, Direction.East]), SpellIds.Accio],
 ]);
 const playerDirections = new Map();
 function isPersistentSpell(spell) {

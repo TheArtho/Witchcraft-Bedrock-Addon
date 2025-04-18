@@ -1,6 +1,7 @@
-import {Player, system, Vector3, Entity} from "@minecraft/server";
-import {ProjectileSpell} from "../spells/ProjectileSpell";
+import {Entity, EntityType, EntityTypes, Player, system, Vector3} from "@minecraft/server";
+import {MagicProjectileFlag, ProjectileSpell} from "../spells/ProjectileSpell";
 import {spellIdToString} from "../spells/spellRegistry";
+import {MinecraftEntityTypes} from "@minecraft/vanilla-data/lib/mojang-entity";
 
 const passThroughBlocks = [
     "minecraft:water",
@@ -28,7 +29,7 @@ const passThroughBlocks = [
     "minecraft:brown_mushroom"
 ];
 
-export function spawnMagicProjectile(caster: Player, spell : ProjectileSpell) {
+export function spawnMagicProjectile(caster: Player, spell : ProjectileSpell, flags? : MagicProjectileFlag[]) {
     const direction = caster.getViewDirection();
     const origin = caster.getHeadLocation();
     const dimension = caster.dimension;
@@ -56,6 +57,13 @@ export function spawnMagicProjectile(caster: Player, spell : ProjectileSpell) {
 
     projectile.dimension.playSound("note.harp", projectile.location);
     projectile.dimension.spawnParticle(particleName, projectile.location);
+
+    let excludeEntityTypes : string[] = [];
+    if (flags) {
+        if (!flags.includes(MagicProjectileFlag.CanTouchItems)) {
+            excludeEntityTypes.push("item")
+        }
+    }
 
     const interval = system.runInterval(() => {
 
@@ -99,6 +107,7 @@ export function spawnMagicProjectile(caster: Player, spell : ProjectileSpell) {
                 location: nextPos,
                 maxDistance: 2,
                 excludeFamilies: ["projectile"],
+                excludeTypes: excludeEntityTypes
             }).find(e => e.id !== caster.id);
         }
         catch (e) {
