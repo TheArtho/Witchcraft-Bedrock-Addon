@@ -6,7 +6,13 @@ let hasInit = false;
 world.afterEvents.playerJoin.subscribe(() => {
     if (!hasInit)
         return;
-    cleanupLumosEntities();
+    let interval = system.runInterval(() => {
+        const players = world.getPlayers();
+        if (players.length === 0)
+            return;
+        system.clearRun(interval); // stop directly the interval
+        cleanupLumosEntities();
+    }); // Wait for one player in the chunk to start this function
 });
 export function init() {
     if (hasInit)

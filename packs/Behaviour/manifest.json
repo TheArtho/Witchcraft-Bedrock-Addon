@@ -11,7 +11,7 @@
 		"description": "pack.description",
 		"min_engine_version": [1, 21, 70],
 		"uuid": "5291b84b-e2e5-470f-a663-54d7b4df82c8",
-		"version": [0, 0, 1]
+		"version": [1, 0, 0]
 	},
 	"modules": [
 		{

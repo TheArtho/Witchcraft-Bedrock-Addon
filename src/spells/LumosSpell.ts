@@ -1,5 +1,5 @@
 import {Spell, SpellIds} from "./Spell";
-import {Dimension, Entity, GameMode, Player, system, Vector3} from "@minecraft/server";
+import {Dimension, Entity, GameMode, Player, system, Vector3, world} from "@minecraft/server";
 import {MinecraftTextColor} from "../utils/MinecraftTextColor";
 import {PersistentSpell} from "./PersistentSpell";
 import {playerData} from "../player/PlayerData";
@@ -11,9 +11,11 @@ export class LumosSpell extends Spell implements PersistentSpell {
     interval: any;
     previousPos: Vector3 | null = null;
     isActive: Boolean = false;
+    dimension: Dimension;
 
     constructor(caster: Player) {
         super(SpellIds.Lumos, "Lumos", "Éclaire autour de l'utilisateur.", MinecraftTextColor.Gold, caster);
+        this.dimension = this.caster.dimension;
     }
 
     cast(): void {
@@ -50,13 +52,25 @@ export class LumosSpell extends Spell implements PersistentSpell {
             this.setLightBlock(this.previousPos, this.caster);
         }
 
-        this.entity?.addTag(`lumos:${this.caster.id}`)
+        if (this.entity) {
+            this.entity.nameTag = `lumos:${this.caster.id}`;
+        }
+
+        let leaveEvent = (event : any) => {
+            if (event.playerId !== this.caster.id) return;
+
+            system.run(() => {
+                world.beforeEvents.playerLeave.unsubscribe(leaveEvent);
+                this.stop();
+            })
+        }
+
+        world.beforeEvents.playerLeave.subscribe(leaveEvent);
 
         this.interval = system.runInterval(() => {
             if (!this.isActive) return;
 
             if (!this.caster.isValid) {
-                console.log(`[Witchcraft] ${this.caster.name} disconnected, cleaning the lumos light...`)
                 this.stop();
                 return;
             }
@@ -67,13 +81,13 @@ export class LumosSpell extends Spell implements PersistentSpell {
                 if (!this.samePosition(currentPos, this.previousPos)) {
                     this.setLightBlock(currentPos, this.caster);
                     if (this.previousPos) {
-                        this.clearLightBlock(this.previousPos, this.caster.dimension);
+                        this.clearLightBlock(this.previousPos, this.dimension);
                     }
                     this.previousPos = currentPos;
                 }
             } else if (this.previousPos) {
                 // No valid light position found, clear previous one
-                this.clearLightBlock(this.previousPos, this.caster.dimension);
+                this.clearLightBlock(this.previousPos, this.dimension);
                 this.previousPos = null;
             }
 
@@ -88,6 +102,9 @@ export class LumosSpell extends Spell implements PersistentSpell {
 
     stop(): void {
         if (!this.isActive) return;
+
+        let blockHasBeenCleared;
+
         this.isActive = false;
 
         if (this.interval) {
@@ -95,16 +112,24 @@ export class LumosSpell extends Spell implements PersistentSpell {
             this.interval = undefined;
         }
 
-        if (this.entity?.isValid) {
-            this.entity.triggerEvent("minecraft:despawn_now");
+        if (this.dimension) {
+            if (this.previousPos) {
+                blockHasBeenCleared = this.clearLightBlock(this.previousPos, this.dimension);
+                this.previousPos = null;
+            }
+            if (blockHasBeenCleared) {
+                if (this.entity?.isValid) {
+                    this.entity.triggerEvent("minecraft:despawn_now");
+                }
+            }
         }
 
-        if (this.previousPos) {
-            this.clearLightBlock(this.previousPos, this.caster.dimension);
-            this.previousPos = null;
+        try {
+            activeSpells.delete(this.caster.id);
         }
-
-        activeSpells.delete(this.caster.id);
+        catch (e) {
+            // Skip
+        }
     }
 
     private findLightPlacement(player: Player, previousPos : Vector3 | null): Vector3 | null {
@@ -162,11 +187,13 @@ export class LumosSpell extends Spell implements PersistentSpell {
         }
     }
 
-    private clearLightBlock(pos: Vector3, dimension: Dimension): void {
+    private clearLightBlock(pos: Vector3, dimension: Dimension): Boolean {
         const block = dimension.getBlock(pos);
         if (block?.typeId === "minecraft:light_block_15") {
             dimension.setBlockType(pos, "minecraft:air");
+            return dimension.getBlock(pos)?.typeId === "minecraft:air";
         }
+        return false;
     }
 
     private samePosition(a: Vector3 | null, b: Vector3 | null): boolean {

@@ -146,6 +146,15 @@ customEvents.afterEvents.playerSlotChange.subscribe(({ player }) => {
     }
 })
 */
+world.afterEvents.playerDimensionChange.subscribe((event) => {
+    if (activeSpells.has(event.player.id)) {
+        const spell = activeSpells.get(event.player.id);
+        if (spell && isPersistentSpell(spell)) {
+            spell.stop();
+            activeSpells.delete(event.player.id);
+        }
+    }
+});
 world.afterEvents.playerJoin.subscribe(({ playerId }) => {
     // Delay by 1 tick to ensure the player object is available
     system.runTimeout(() => {

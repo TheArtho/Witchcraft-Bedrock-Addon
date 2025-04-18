@@ -2,6 +2,7 @@ const fs = require("fs-extra");
 const path = require("path");
 const { execSync } = require("child_process");
 const config = require("./buildconfig.json");
+
 const modName = config.name || "MyMod";
 
 const behaviorPack = path.join(__dirname, "packs", "Behaviour");
@@ -17,8 +18,21 @@ const mcDir = path.join(
     "games",
     "com.mojang"
 );
+
 const targetBP = path.join(mcDir, "development_behavior_packs", `${modName} BP`);
 const targetRP = path.join(mcDir, "development_resource_packs", `${modName} RP`);
+
+let serverBP = null;
+let serverRP = null;
+
+const privateConfigPath = path.join(__dirname, "private_config.json");
+const privateConfigExists = fs.existsSync(privateConfigPath);
+if (privateConfigExists) {
+    const privateConfig = require(privateConfigPath);
+    const serverPath = privateConfig.server_path;
+    serverBP = path.join(serverPath, "development_behavior_packs", `${modName} BP`);
+    serverRP = path.join(serverPath, "development_resource_packs", `${modName} RP`);
+}
 
 const shouldClean = process.argv.includes("--clean");
 
@@ -72,9 +86,17 @@ async function compileJsoncToJson(srcDir, destDir) {
         console.log("[UI] Compilation des fichiers .jsonc...");
         await compileJsoncToJson(uiSourceDir, uiTargetDir);
 
-        console.log("Copie des packs vers Minecraft Bedrock...");
-        await cleanAndCopy(behaviorPack, targetBP, "Behavior Pack");
-        await cleanAndCopy(resourcePack, targetRP, "Resource Pack");
+        console.log("[Minecraft Client] Copie des packs...");
+        await cleanAndCopy(behaviorPack, targetBP, "Behavior Pack (client)");
+        await cleanAndCopy(resourcePack, targetRP, "Resource Pack (client)");
+
+        if (privateConfigExists) {
+            console.log("[Server] Copie des packs vers le serveur dédié...");
+            await cleanAndCopy(behaviorPack, serverBP, "Behavior Pack (serveur)");
+            await cleanAndCopy(resourcePack, serverRP, "Resource Pack (serveur)");
+        } else {
+            console.warn("⚠️  Fichier private_config.json introuvable, déploiement serveur ignoré.");
+        }
 
         console.log("✅ Build terminé.");
     } catch (err) {
