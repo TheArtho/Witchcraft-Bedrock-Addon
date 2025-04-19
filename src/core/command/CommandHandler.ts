@@ -5,12 +5,10 @@ import {expelliarmus} from "./handlers/expelliarmus";
 import {Player} from "@minecraft/server";
 
 export class CommandHandler {
-    private static commands = new Map<string, CommandFunction>();
-
-    static register(): void {
-        this.commands.set("fillMana", fillMana);
-        this.commands.set("expelliarmus", expelliarmus);
-    }
+    private static commands = new Map<string, CommandFunction>([
+        ["fillMana", fillMana],
+        ["expelliarmus", expelliarmus],
+    ])
 
     static execute(commandName: string, player : Player, args?: string[]) {
         const command = this.commands.get(commandName);

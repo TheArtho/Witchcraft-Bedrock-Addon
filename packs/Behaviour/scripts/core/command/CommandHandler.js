@@ -1,10 +1,6 @@
 import { fillMana } from "./handlers/fillMana";
 import { expelliarmus } from "./handlers/expelliarmus";
 export class CommandHandler {
-    static register() {
-        this.commands.set("fillMana", fillMana);
-        this.commands.set("expelliarmus", expelliarmus);
-    }
     static execute(commandName, player, args) {
         const command = this.commands.get(commandName);
         if (command) {
@@ -20,4 +16,7 @@ export class CommandHandler {
         }
     }
 }
-CommandHandler.commands = new Map();
+CommandHandler.commands = new Map([
+    ["fillMana", fillMana],
+    ["expelliarmus", expelliarmus],
+]);

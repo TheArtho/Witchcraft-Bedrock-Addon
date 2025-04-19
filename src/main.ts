@@ -3,7 +3,6 @@ import {SaveEventHandler} from "./core/save/SaveEventHandler";
 import {CommandEventHandler} from "./core/command/CommandEventHandler";
 import {InitEventHandler} from "./core/InitEventHandler";
 import {InitManager} from "./core/InitManager";
-import {CommandHandler} from "./core/command/CommandHandler";
 import {UiEventHandler} from "./ui/UiEventHandler";
 
 // Main class
@@ -14,9 +13,6 @@ class Game {
     }
 
     private static registerEvents(): void {
-        // Register commands
-        CommandHandler.register();
-
         // Initialize events
         InitEventHandler.register();
         // Command events

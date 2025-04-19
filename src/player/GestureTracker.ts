@@ -1,4 +1,4 @@
-import {world, system, Player, Direction} from "@minecraft/server";
+import {system, Player, Direction} from "@minecraft/server";
 
 type Rotation = { pitch: number, yaw: number };
 
