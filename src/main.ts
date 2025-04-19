@@ -1,11 +1,10 @@
-import { world, GameMode } from "@minecraft/server";
-import { playerData } from "./player/PlayerData";
 import {ItemEventHandler} from "./items/ItemEventHandler";
 import {SaveEventHandler} from "./core/save/SaveEventHandler";
 import {CommandEventHandler} from "./core/command/CommandEventHandler";
 import {InitEventHandler} from "./core/InitEventHandler";
 import {InitManager} from "./core/InitManager";
 import {CommandHandler} from "./core/command/CommandHandler";
+import {UiEventHandler} from "./ui/UiEventHandler";
 
 // Main class
 class Game {
@@ -26,15 +25,8 @@ class Game {
         SaveEventHandler.register();
         // Item events
         ItemEventHandler.register();
-        // Other events
-        world.beforeEvents.playerGameModeChange.subscribe(this.handleGameModeChange);
-    }
-
-    private static handleGameModeChange(event: any): void {
-        const allowedModes = [GameMode.survival, GameMode.adventure];
-        if (allowedModes.includes(event.toGameMode)) {
-            playerData.get(event.player.id)?.updateManaUi();
-        }
+        // UI events
+        UiEventHandler.register();
     }
 }
 
