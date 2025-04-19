@@ -1,2 +1,0 @@
-import "./potion";
-import "./wand";
