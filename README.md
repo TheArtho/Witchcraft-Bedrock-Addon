@@ -21,10 +21,10 @@
 │   ├── Behavior/            → Output Behavior Pack files
 │   ├── Resource/            → Output Resource Pack files
 ├── src/                     → TypeScript source code
-├── scripts/                 → Build and sync utilities
 ├── buildconfig.json         → Contains the mod name (e.g., Witchcraft)
 ├── tsconfig.json
-└── build.js                 → Build script
+├── build.js                 → Build script
+└── release.js               → Build release script
 ```
 
 ---
@@ -47,6 +47,12 @@ npm run build
 
 ```bash
 npm run build:clean
+```
+
+### 🛠 Compile and build the mcaddon
+
+```bash
+npm run release
 ```
 
 > The build script copies the packs into:
