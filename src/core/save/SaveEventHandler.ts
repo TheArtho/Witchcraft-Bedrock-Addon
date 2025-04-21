@@ -6,8 +6,8 @@ export class SaveEventHandler {
     static register(): void {
         // When a player joins
         world.afterEvents.playerJoin.subscribe(({ playerId }) => {
+            const player = world.getPlayers().find(p => p.id === playerId);
             const interval = system.runInterval(() => {
-                const player = world.getPlayers().find(p => p.id === playerId);
                 if (player) {
                     loadPlayerData(player);
                     system.clearRun(interval);
