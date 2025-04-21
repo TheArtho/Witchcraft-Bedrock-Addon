@@ -1,4 +1,4 @@
-// events/custom/CustomEventBus.ts
+// events/CustomEventBus.ts
 import { PlayerSlotChangeEventSignal } from "./signals/PlayerSlotChangeEventSignal";
 export class CustomEventBus {
 }

@@ -38,14 +38,14 @@ const shouldClean = process.argv.includes("--clean");
 
 async function cleanAndCopy(src, dest, name) {
     if (shouldClean) {
-        console.log(`[Clean] Suppression du dossier : ${dest}`);
+        console.log(`[Clean] Removing directory: ${dest}`);
         await fs.emptyDir(dest);
     }
 
-    console.log(`[Build] Copie du ${name} vers ${dest}`);
+    console.log(`[Build] Copying ${name} to ${dest}...`);
     await fs.ensureDir(dest);
     await fs.copy(src, dest, { overwrite: true });
-    console.log(`[Build] Copie du ${name} terminé.`);
+    console.log(`[Build] ${name} copied successfully.`);
 }
 
 async function compileJsoncToJson(srcDir, destDir) {
@@ -75,31 +75,31 @@ async function compileJsoncToJson(srcDir, destDir) {
     try {
         if (shouldClean) {
             const outDir = path.join(__dirname, "packs", "Behaviour", "scripts");
-            console.log("[Clean] Vidage du dossier de compilation TypeScript...");
+            console.log("[Clean] Clearing compiled TypeScript output...");
             await fs.emptyDir(outDir);
         }
 
-        console.log("[Compiler] Compilation TypeScript...");
+        console.log("[Compiler] Compiling TypeScript...");
         execSync("npx tsc", { stdio: "inherit" });
-        console.log("[Compiler] Compilation TypeScript terminée.");
+        console.log("[Compiler] TypeScript compilation completed.");
 
-        console.log("[UI] Compilation des fichiers .jsonc...");
+        console.log("[UI] Converting .jsonc files...");
         await compileJsoncToJson(uiSourceDir, uiTargetDir);
 
-        console.log("[Minecraft Client] Copie des packs...");
+        console.log("[Minecraft Client] Copying packs...");
         await cleanAndCopy(behaviorPack, targetBP, "Behavior Pack (client)");
         await cleanAndCopy(resourcePack, targetRP, "Resource Pack (client)");
 
         if (privateConfigExists) {
-            console.log("[Server] Copie des packs vers le serveur dédié...");
-            await cleanAndCopy(behaviorPack, serverBP, "Behavior Pack (serveur)");
-            await cleanAndCopy(resourcePack, serverRP, "Resource Pack (serveur)");
+            console.log("[Server] Copying packs to dedicated server...");
+            await cleanAndCopy(behaviorPack, serverBP, "Behavior Pack (server)");
+            await cleanAndCopy(resourcePack, serverRP, "Resource Pack (server)");
         } else {
-            console.warn("⚠️  Fichier private_config.json introuvable, déploiement serveur ignoré.");
+            console.warn("⚠️  private_config.json not found. Skipping server deployment.");
         }
 
-        console.log("✅ Build terminé.");
+        console.log("\x1b[32mBuild completed successfully.\x1b[0m");
     } catch (err) {
-        console.error("❌ Erreur pendant la compilation ou la copie :", err);
+        console.error("Error during build process:", err);
     }
 })();
